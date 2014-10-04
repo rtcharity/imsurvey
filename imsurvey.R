@@ -1708,27 +1708,27 @@ in.sample[id == 1606 | id == 1572 | id == 144 | id == 245 | id == 374 | id == 16
 
 
 ## Descriptive Statistics
-count(metaethics)
+table(metaethics)
 
-count(poverty)
-count(environmentalism)
-count(animals)
-count(rationality)
-count(politics)
-count(ai)
-count(xrisk)
-count(farfuture)
-count(prioritization)
-count(metacharity)
+table(poverty)
+table(environmentalism)
+table(animals)
+table(rationality)
+table(politics)
+table(ai)
+table(xrisk)
+table(farfuture)
+table(prioritization)
+table(metacharity)
 
-count(diet)
-count(diet2)
+table(diet)
+table(diet2)
 
-count(group)
-count(friendcount)
-count(student)
+table(group)
+table(friendcount)
+table(student)
 
-count(career)
+table(career)
 
 
 ## Descriptive Stats for 2013 Donations
