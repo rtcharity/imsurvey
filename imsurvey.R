@@ -69,6 +69,10 @@ metacharityfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.d
 metacharity[metacharityfeed == 'No'] <- 0
 metacharity[metacharityfeed == 'Yes'] <- 1
 
+causeother = rep(0, 1856)
+causeotherfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Other.
+causeother[causeotherfeed != ""] <- 1
+
 
 # Diet
 diet <- imdata$What.is.your.diet.
@@ -244,7 +248,7 @@ career[id == 716] <- "Direct"
 career[id == 725] <- "ETG"
 career[id == 738] <- "Direct"
 career[id == 766] <- "ETGHybrid"
-career[id == 791] <- "Academia"
+career[id == 791] <- "Research"
 career[id == 821] <- "ETG"
 career[id == 832] <- "ETG"
 career[id == 852] <- "Direct"
@@ -1707,6 +1711,27 @@ in.sample = rep(FALSE, 1856)
 in.sample[id == 1606 | id == 1572 | id == 144 | id == 245 | id == 374 | id == 1683 | id == 1612 | id == 1580 | id == 1640 | id == 189 | id == 1575 | id == 163 | id == 1564 | id == 1611 | id == 207 | id == 1577 | id == 1607 | id == 1568 | id == 1630 | id == 1658 | id == 1598 | id == 1561 | id == 1596 | id == 1614 | id == 1615 | id == 252 | id == 1592 | id == 1054 | id == 1570 | id == 1639 | id == 1338] <- TRUE 
 
 
+## Demographics
+heardEA = imdata$Have.you.ever.heard.of.the.term..Effective.Altruism..or..EA.. 
+table(heardEA)
+length(p_inc_donate[p_inc_donate >= 80 & !is.na(p_inc_donate)])
+describeEA = imdata$Could.you..however.loosely..be.described.as..an.EA..
+table(describeEA)
+table(heardEA, describeEA)
+gender = imdata$Your.gender
+table(gender)
+numeric_ages <- as.numeric(age[!is.na(age) & age != ""])
+median(numeric_ages[!is.na(numeric_ages)])
+mean(numeric_ages[!is.na(numeric_ages)])
+sd(numeric_ages[!is.na(numeric_ages)])
+location = imdata$In.which.country.do.you.live.
+sort(table(location))
+sublocation = imdata$In.which.city.do.you.live.
+sort(table(sublocation))
+religion = imdata$Your.religious.beliefs
+sort(table(religion))
+table(student)
+
 ## Descriptive Statistics
 table(metaethics)
 
@@ -1720,6 +1745,19 @@ table(xrisk)
 table(farfuture)
 table(prioritization)
 table(metacharity)
+table(causeother)
+
+table(poverty[describeEA == "Yes"])
+table(environmentalism[describeEA == "Yes"])
+table(animals[describeEA == "Yes"])
+table(rationality[describeEA == "Yes"])
+table(politics[describeEA == "Yes"])
+table(ai[describeEA == "Yes"])
+table(xrisk[describeEA == "Yes"])
+table(farfuture[describeEA == "Yes"])
+table(prioritization[describeEA == "Yes"])
+table(metacharity[describeEA == "Yes"])
+table(causeother[describeEA == "Yes"])
 
 table(diet)
 table(diet2)
@@ -1730,15 +1768,48 @@ table(student)
 
 table(career)
 
+table(factors_contact)
+table(factors_80K)
+table(factors_TLYCS)
+table(factors_LW)
+table(factors_GWWC)
+table(factors_givewell)
+table(factors_friends)
+table(factors_online)
+table(factors_chapter)
+
+table(referrer)
 
 ## Descriptive Stats for 2013 Donations
 sum(!is.na(donate_2013))                    # Number of records
-mean(donate_2013, na.rm=T)                  # Mean
-mean(donate_2013[id != 580], na.rm=T)       # Mean without 2M donation
-median(donate_2013, na.rm=T)                # Median
-sd(donate_2013, na.rm=T)                    # SD
-quantile(donate_2013, na.rm=T, probs=seq(0.1,1,len=10))  # Deciles
-quantile(donate_2013[student == "No"], na.rm=T, probs=seq(0.1,1,len=10))  # Deciles without student status
-quantile(donate_2013[student == "No"], na.rm=T, probs=seq(0.1,1,len=10))  # Deciles without student status
-quantile(donate_2013[student == "No"], na.rm=T, probs=seq(0.9,1,len=9))  # Deciles without student status
+mean(donate_2013[describeEA == "Yes"], na.rm=T)                  # Mean
+median(donate_2013[describeEA == "Yes"], na.rm=T)                # Median
+median(donate_2013[describeEA == "No"], na.rm=T)                # Median
+median(donate_2013[student == "No" & describeEA == "Yes"], na.rm=T)                # Non-student Median
+median(donate_2013[student == "Yes" & describeEA == "Yes"], na.rm=T)                # Student Median
+median(donate_2013[student == "No" & describeEA == "Yes" & (career == "ETG" || career == "ETGHybrid")], na.rm=T)                # Student Median
+sd(donate_2013[describeEA == "Yes"], na.rm=T)                    # SD
+quantile(donate_2013[describeEA == "Yes"], na.rm=T, probs=seq(0.1,1,len=10))  # Deciles
+quantile(donate_2013[describeEA == "Yes"], na.rm=T, probs=seq(0.91,1,len=10))  # 0.9-1 Deciles 
+sum(donate_2013[!is.na(donate_2013) & describeEA == "Yes"])
 
+median(p_inc_donate[describeEA == "Yes"], na.rm=T)
+mean(p_inc_donate[describeEA == "Yes"], na.rm=T)
+median(p_inc_donate[student == "No" & describeEA == "Yes"], na.rm=T)
+median(p_inc_donate[student == "No" & describeEA == "No"], na.rm=T)
+
+length(p_inc_donate[!is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
+length(p_inc_donate[p_inc_donate >= 1 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
+length(p_inc_donate[p_inc_donate >= 2 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
+length(p_inc_donate[p_inc_donate >= 3 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
+length(p_inc_donate[p_inc_donate >= 5 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
+length(p_inc_donate[p_inc_donate >= 10 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
+length(p_inc_donate[p_inc_donate >= 15 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
+length(p_inc_donate[p_inc_donate >= 20 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
+length(p_inc_donate[p_inc_donate >= 30 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
+length(p_inc_donate[p_inc_donate >= 40 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
+length(p_inc_donate[p_inc_donate >= 50 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
+length(p_inc_donate[p_inc_donate >= 60 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
+length(p_inc_donate[p_inc_donate >= 70 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
+length(p_inc_donate[p_inc_donate >= 80 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
+length(p_inc_donate[p_inc_donate >= 90 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000]) 
