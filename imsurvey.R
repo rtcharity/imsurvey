@@ -79,6 +79,9 @@ diet <- imdata$What.is.your.diet.
 diet2 = rep(NA, 1856)
 diet2[diet == 'Meat-eating'] <- 0
 diet2[diet != 'Meat-eating' & !is.na(diet)] <- 1
+diet3 = rep(0, 1856)
+diet3[is.na(diet)] <- NA
+diet3[diet %in% c('Vegetarian', 'Vegan')] <- 1
 
 
 # Group
@@ -1720,6 +1723,7 @@ table(describeEA)
 table(heardEA, describeEA)
 gender = imdata$Your.gender
 table(gender)
+age = imdata$Your.age
 numeric_ages <- as.numeric(age[!is.na(age) & age != ""])
 median(numeric_ages[!is.na(numeric_ages)])
 mean(numeric_ages[!is.na(numeric_ages)])
@@ -1731,6 +1735,9 @@ sort(table(sublocation))
 religion = imdata$Your.religious.beliefs
 sort(table(religion))
 table(student)
+table(diet)
+table(diet2)
+table(diet, animals)
 
 ## Descriptive Statistics
 table(metaethics)
@@ -1767,6 +1774,11 @@ table(friendcount)
 table(student)
 
 table(career)
+is.ETG <- rep(0,1856)
+is.ETG[is.na(career)] <- NA
+is.ETG[career == "ETG"] <- 1
+table(career[income_2013 >= 60000 & p_inc_donate >= 10])
+table(career[income_2013 >= 100000 & p_inc_donate >= 10])
 
 table(factors_contact)
 table(factors_80K)
@@ -1813,3 +1825,22 @@ length(p_inc_donate[p_inc_donate >= 60 & !is.na(p_inc_donate) & describeEA == "Y
 length(p_inc_donate[p_inc_donate >= 70 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
 length(p_inc_donate[p_inc_donate >= 80 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
 length(p_inc_donate[p_inc_donate >= 90 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000]) 
+
+# Correlations
+t.test(donate_2013[factors_80K!="N/A"] ~ factors_80K[factors_80K!="N/A"])
+
+dp = donate_2013[!is.na(age) & age !=""]
+cor.test(dp[!is.na(dp) & !is.na(numeric_ages)], numeric_ages[!is.na(dp) & !is.na(numeric_ages)])
+
+summary(lm(p_inc_donate ~ group))
+chisq.test(career, group)
+chisq.test(career, factors_80K)
+table(metaethics, diet3)
+table(group, diet3)
+
+aggregate(p_inc_donate ~ career, imdata, median)
+summary(lm(donate_2013 ~ career))
+summary(lm(donate_2013[student == "No" & describeEA == "Yes"] ~ career[student == "No" & describeEA == "Yes"]))
+summary(lm(p_inc_donate ~ career))
+t.test(donate_2013[student == "No" & describeEA == "Yes"], is.ETG[student == "No" & describeEA == "Yes"])
+t.test(p_inc_donate[student == "No" & describeEA == "Yes"], is.ETG[student == "No" & describeEA == "Yes"])
