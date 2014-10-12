@@ -8,8 +8,13 @@ imdata <- read.csv('imdata.csv')
 id <- imdata$Response.ID
 
 
+# Exclude NonEAs
+describeEA <- imdata$Could.you..however.loosely..be.described.as..an.EA..
+imdata_with_nonEAS <- imdata
+imdata <- imdata[describeEA == "Yes",]
+
 # Metaethics
-metaethics <- rep(NA, 1856)
+metaethics <- rep(NA, 768)
 metaethicsfeed <- imdata$What.moral.philosophy.do.you.subscribe.to..if.any. 
 metaethics[metaethicsfeed == 'Consequentialist/utilitarian'] <- 'consequentialist'
 metaethics[metaethicsfeed == 'Deontology'] <- 'deontology'  
@@ -19,74 +24,74 @@ metaethics[id == 17 | id == 45 | id == 122 | id == 201 | id == 217 | id == 377 |
 
 
 # Causes
-poverty = rep(NA, 1856)
+poverty = rep(NA, 768)
 povertyfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Global.poverty.
 poverty[povertyfeed == 'No'] <- 0
 poverty[povertyfeed == 'Yes'] <- 1
 
-environmentalism = rep(NA, 1856)
+environmentalism = rep(NA, 768)
 environmentalismfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Environmentalism.
 environmentalism[environmentalismfeed == 'No'] <- 0
 environmentalism[environmentalismfeed == 'Yes'] <- 1
 
-animals = rep(NA, 1856)
+animals = rep(NA, 768)
 animalsfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Animal.welfare.
 animals[animalsfeed == 'No'] <- 0
 animals[animalsfeed == 'Yes'] <- 1
 
-rationality = rep(NA, 1856)
+rationality = rep(NA, 768)
 rationalityfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Improving.rationality.or.science.
 rationality[rationalityfeed == 'No'] <- 0
 rationality[rationalityfeed == 'Yes'] <- 1
 
-politics = rep(NA, 1856)
+politics = rep(NA, 768)
 politicsfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Political.reform.
 politics[politicsfeed == 'No'] <- 0
 politics[politicsfeed == 'Yes'] <- 1
 
-ai = rep(NA, 1856)
+ai = rep(NA, 768)
 aifeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Existential.risk..artificial.intelligence.
 ai[aifeed == 'No'] <- 0
 ai[aifeed == 'Yes'] <- 1
 
-xrisk = rep(NA, 1856)
+xrisk = rep(NA, 768)
 xriskfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Existential.risk..other..
 xrisk[xriskfeed == 'No'] <- 0
 xrisk[xriskfeed == 'Yes'] <- 1
 
-farfuture = rep(NA, 1856)
+farfuture = rep(NA, 768)
 farfuturefeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Far.future.concerns..besides.existential.risk..
 farfuture[farfuturefeed == 'No'] <- 0
 farfuture[farfuturefeed == 'Yes'] <- 1
 
-prioritization = rep(NA, 1856)
+prioritization = rep(NA, 768)
 prioritizationfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Cause.prioritization.
 prioritization[prioritizationfeed == 'No'] <- 0
 prioritization[prioritizationfeed == 'Yes'] <- 1
 
-metacharity = rep(NA, 1856)
+metacharity = rep(NA, 768)
 metacharityfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Meta.charities.which.direct.resources.to.these.causes.
 metacharity[metacharityfeed == 'No'] <- 0
 metacharity[metacharityfeed == 'Yes'] <- 1
 
-causeother = rep(0, 1856)
+causeother = rep(0, 768)
 causeotherfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Other.
 causeother[causeotherfeed != ""] <- 1
 
 
 # Diet
 diet <- imdata$What.is.your.diet.
-diet2 = rep(NA, 1856)
+diet2 = rep(NA, 768)
 diet2[diet == 'Meat-eating'] <- 0
 diet2[diet != 'Meat-eating' & !is.na(diet)] <- 1
-diet3 = rep(0, 1856)
+diet3 = rep(0, 768)
 diet3[is.na(diet)] <- NA
 diet3[diet %in% c('Vegetarian', 'Vegan')] <- 1
 
 
 # Group
 groupfeed = imdata$How.did.you.first.hear.about..Effective.Altruism..
-group = rep(NA, 1856)
+group = rep(NA, 768)
 group[groupfeed == "80,000 Hours"] <- "CEA"
 group[groupfeed == "Animal Charity Evaluators (formerly Effective Animal Activism)"] <- "ACE"
 group[groupfeed == "Facebook"] <- "FB"
@@ -212,7 +217,7 @@ friendcount = imdata$Roughly.how.many.of.your.friends.would.describe.themselves.
 
 # Career Path
 careerfeed = imdata$What.career.path.do.you.plan.to.follow.
-career = rep(NA, 1856)
+career = rep(NA, 768)
 career[careerfeed == "Direct charity/non-profit work"] <- "Direct"
 career[careerfeed == "Earning to Give"] <- "ETG"
 career[careerfeed == "None"] <- "None"
@@ -276,7 +281,7 @@ student = imdata$Are.you.a.full.time.student.
 
 
 # Donation Total
-donate_2013 = rep(NA, 1856)
+donate_2013 = rep(NA, 768)
 donate_2013[id == 6] <- 6216.82
 donate_2013[id == 13] <- 1000
 donate_2013[id == 17] <- 7000
@@ -989,7 +994,7 @@ donate_2013[id == 1889] <- 650
 donate_2013[id == 1894] <- 1000
 
 # Income
-income_2013 <- rep(NA, 1856)
+income_2013 <- rep(NA, 768)
 income_2013[id == 6] <- 0.00
 income_2013[id == 11] <- 8000.00
 income_2013[id == 13] <- 0.00
@@ -1696,7 +1701,7 @@ p_inc_donate_ns = p_inc_donate[student == "Yes"]
 
 
 # Referral URL
-referrer = rep(NA, 1856)
+referrer = rep(NA, 768)
 referrerfeed <- sapply(strsplit(imdata$Referrer.URL, "\\?"), "[", 2)
 referrer[referrerfeed == 's=9'] <- 'EAFB'
 referrer[referrerfeed == 's=14'] <- 'LW'
@@ -1710,15 +1715,14 @@ referrer[substring(referrerfeed, 1, 1) == 't'] <- 'Tom'
 
 
 # In the Random Sample?
-in.sample = rep(FALSE, 1856)
+in.sample = rep(FALSE, 768)
 in.sample[id == 1606 | id == 1572 | id == 144 | id == 245 | id == 374 | id == 1683 | id == 1612 | id == 1580 | id == 1640 | id == 189 | id == 1575 | id == 163 | id == 1564 | id == 1611 | id == 207 | id == 1577 | id == 1607 | id == 1568 | id == 1630 | id == 1658 | id == 1598 | id == 1561 | id == 1596 | id == 1614 | id == 1615 | id == 252 | id == 1592 | id == 1054 | id == 1570 | id == 1639 | id == 1338] <- TRUE 
 
 
 ## Demographics
-heardEA = imdata$Have.you.ever.heard.of.the.term..Effective.Altruism..or..EA.. 
+heardEA = imdata_with_nonEAS$Have.you.ever.heard.of.the.term..Effective.Altruism..or..EA.. 
 table(heardEA)
 length(p_inc_donate[p_inc_donate >= 80 & !is.na(p_inc_donate)])
-describeEA = imdata$Could.you..however.loosely..be.described.as..an.EA..
 table(describeEA)
 table(heardEA, describeEA)
 gender = imdata$Your.gender
@@ -1769,12 +1773,12 @@ table(causeother[describeEA == "Yes"])
 table(diet)
 table(diet2)
 
-table(group)
+sort(table(group))
 table(friendcount)
 table(student)
 
 table(career)
-is.ETG <- rep(0,1856)
+is.ETG <- rep(0,768)
 is.ETG[is.na(career)] <- NA
 is.ETG[career == "ETG"] <- 1
 table(career[income_2013 >= 60000 & p_inc_donate >= 10])
@@ -1808,7 +1812,9 @@ sum(donate_2013[!is.na(donate_2013) & describeEA == "Yes"])
 median(p_inc_donate[describeEA == "Yes"], na.rm=T)
 mean(p_inc_donate[describeEA == "Yes"], na.rm=T)
 median(p_inc_donate[student == "No" & describeEA == "Yes"], na.rm=T)
+sd(p_inc_donate[student == "No" & describeEA == "Yes"], na.rm=T)
 median(p_inc_donate[student == "No" & describeEA == "No"], na.rm=T)
+sd(p_inc_donate[p_inc_donate != "Inf" & p_inc_donate != "NaN" & describeEA == "Yes" & income_2013 >= 10000], na.rm=T)
 
 length(p_inc_donate[!is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
 length(p_inc_donate[p_inc_donate >= 1 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
