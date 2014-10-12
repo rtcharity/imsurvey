@@ -58,9 +58,15 @@ mungebits::mungebit$new(value_replacer)$run(mp, 'metaethics', list(
 imdata[imdata[[1]] %in% c(17, 45, 122, 201, 217, 377, 425, 524, 571, 971, 974, 994, 1029, 1054, 1060, 1035, 1438, 1459, 1548, 1572, 1678, 1707) & imdata[[2]] == 'metaethics', 3] <- 'consequentialist'
 
 # Diet
-diet2df <- data.frame(Response.ID = c('ids...'), variable = c('diet2'), values =
-  sapply(imdata[imdata[[2]] == 'diet'], function(x) {
+diet2df <- data.frame(Response.ID = unique(imdata[[1]]), variable = c('diet2'), value =
+  sapply(imdata[imdata[[2]] == 'diet',3], function(x) {
     ifelse(x == 'Meat-eating', 0, 1)
+  })
+)
+imdata <- rbind(imdata, diet2df)
+diet3df <- data.frame(Response.ID = unique(imdata[[1]]), variable = c('diet2'), value =
+  sapply(imdata[imdata[[2]] == 'diet',3], function(x) {
+    ifelse(x == 'Vegetarian', 1, ifelse(x == 'Vegan', 1, 0))
   })
 )
 imdata <- rbind(imdata, diet2df)
