@@ -1,86 +1,69 @@
-### Open Data
+### Libraries
+if (!require(reshape2)) install.packages('reshape2'); require(reshape2)
+if (!require(devtools)) install.packages('devtools'); require(devtools)
+if (!require(mungebits)) install_github('robertzk/mungebits'); require(mungebits)
+if (!require(syberiaMungebits)) install_github('robertzk/syberiaMungebits'); require(syberiaMungebits)
+
+
+### Read Data
 setwd('~/dev/imsurvey')
 imdata <- read.csv('imdata.csv')
 
 
 ### Clean Data
-# Response ID
-id <- imdata$Response.ID
+# Melt Dataframe
+library(reshape2)
+imdata <- melt(imdata, id="Response.ID")
 
+# Clean up variable names
+repl <- list(
+  'id' = 'Response.ID',
+  'describeEA' = 'Could.you..however.loosely..be.described.as..an.EA..',
+  'metaethics' = 'What.moral.philosophy.do.you.subscribe.to..if.any.',
+  'poverty' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Global.poverty.',
+  'environmentalism' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Environmentalism.',
+  'animals' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Animal.welfare.',
+  'rationality' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Improving.rationality.or.science.',
+  'politics' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Political.reform.',
+  'ai' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Existential.risk..artificial.intelligence.',
+  'xrisk' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Existential.risk..other..',
+  'farfuture' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Far.future.concerns..besides.existential.risk..',
+  'prioritization' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Cause.prioritization.',
+  'metacharity' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Meta.charities.which.direct.resources.to.these.causes.',
+  'causeother' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Other.',
+  'diet' = 'What.is.your.diet.'
+)
+imdata[[2]] <- Reduce(function(v,i)
+  gsub(fixed = TRUE, repl[[i]], names(repl)[i], v), seq_along(repl)
+  , imdata[[2]]
+)
 
-# Exclude NonEAs
-describeEA <- imdata$Could.you..however.loosely..be.described.as..an.EA..
-imdata_with_nonEAS <- imdata
-imdata <- imdata[describeEA == "Yes",]
+# Remove extraneous variables
+extraneous <- c('metaethics..Other.')
+imdata <- imdata[!imdata[[2]] %in% extraneous,]
 
-# Metaethics
-metaethics <- rep(NA, 768)
-metaethicsfeed <- imdata$What.moral.philosophy.do.you.subscribe.to..if.any. 
-metaethics[metaethicsfeed == 'Consequentialist/utilitarian'] <- 'consequentialist'
-metaethics[metaethicsfeed == 'Deontology'] <- 'deontology'  
-metaethics[metaethicsfeed == 'Other' | metaethicsfeed == 'No opinion, or not familiar with these terms'] <- 'other'
-metaethics[metaethicsfeed == 'Virtue ethics'] <- 'virtue'
-metaethics[id == 17 | id == 45 | id == 122 | id == 201 | id == 217 | id == 377 | id == 425 | id == 524 | id == 571 | id == 971 | id == 974 | id == 994 | id == 1029 | id == 1054 | id == 1060 | id == 1035 | id == 1438 | id == 1459 | id == 1548 | id == 1572 | id == 1678 | id == 1707] <- 'consequentialist'  # Interpolate other, lump 'non-utilitarian consequetialist', 'non-realist consequentialist' and 'consequentialist in theory and deontology in practice' into consequentialist
+# Exclude NonEAs and no answers
+imdata_with_non_eas <- imdata
+imdata <- imdata[imdata[[2]] == 'describeEA' & imdata[[3]] == 'Yes',]
 
-
-# Causes
-poverty = rep(NA, 768)
-povertyfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Global.poverty.
-poverty[povertyfeed == 'No'] <- 0
-poverty[povertyfeed == 'Yes'] <- 1
-
-environmentalism = rep(NA, 768)
-environmentalismfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Environmentalism.
-environmentalism[environmentalismfeed == 'No'] <- 0
-environmentalism[environmentalismfeed == 'Yes'] <- 1
-
-animals = rep(NA, 768)
-animalsfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Animal.welfare.
-animals[animalsfeed == 'No'] <- 0
-animals[animalsfeed == 'Yes'] <- 1
-
-rationality = rep(NA, 768)
-rationalityfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Improving.rationality.or.science.
-rationality[rationalityfeed == 'No'] <- 0
-rationality[rationalityfeed == 'Yes'] <- 1
-
-politics = rep(NA, 768)
-politicsfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Political.reform.
-politics[politicsfeed == 'No'] <- 0
-politics[politicsfeed == 'Yes'] <- 1
-
-ai = rep(NA, 768)
-aifeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Existential.risk..artificial.intelligence.
-ai[aifeed == 'No'] <- 0
-ai[aifeed == 'Yes'] <- 1
-
-xrisk = rep(NA, 768)
-xriskfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Existential.risk..other..
-xrisk[xriskfeed == 'No'] <- 0
-xrisk[xriskfeed == 'Yes'] <- 1
-
-farfuture = rep(NA, 768)
-farfuturefeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Far.future.concerns..besides.existential.risk..
-farfuture[farfuturefeed == 'No'] <- 0
-farfuture[farfuturefeed == 'Yes'] <- 1
-
-prioritization = rep(NA, 768)
-prioritizationfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Cause.prioritization.
-prioritization[prioritizationfeed == 'No'] <- 0
-prioritization[prioritizationfeed == 'Yes'] <- 1
-
-metacharity = rep(NA, 768)
-metacharityfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Meta.charities.which.direct.resources.to.these.causes.
-metacharity[metacharityfeed == 'No'] <- 0
-metacharity[metacharityfeed == 'Yes'] <- 1
-
-causeother = rep(0, 768)
-causeotherfeed = imdata$Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Other.
-causeother[causeotherfeed != ""] <- 1
-
+# Clean Metaethics
+mp <- mungeplane(imdata)
+mungebits::mungebit$new(value_replacer)$run(mp, 'metaethics', list(
+  'Consequentialist/utilitarian' = 'consequentialist',
+  'Deontology' = 'deontology',
+  'Virtue ethics' = 'virtue',
+  'Other' = 'other',
+  'No opinion, or not familiar with these terms' = 'other'
+)
+imdata[imdata[[1]] %in% c(17, 45, 122, 201, 217, 377, 425, 524, 571, 971, 974, 994, 1029, 1054, 1060, 1035, 1438, 1459, 1548, 1572, 1678, 1707) & imdata[[2]] == 'metaethics', 3] <- 'consequentialist'
 
 # Diet
-diet <- imdata$What.is.your.diet.
+diet2df <- data.frame(Response.ID = c('ids...'), variable = c('diet2'), values =
+  sapply(imdata[imdata[[2]] == 'diet']), function(x) {
+    ifelse(x == 'Meat-eating', 0, 1)
+)
+imdata <- rbind(imdata, diet2df)
+
 diet2 = rep(NA, 768)
 diet2[diet == 'Meat-eating'] <- 0
 diet2[diet != 'Meat-eating' & !is.na(diet)] <- 1
@@ -212,21 +195,21 @@ factors_online[id == 606] <- "Yes"
 
 
 # Donation targets
-donate80K = imdata$Over.2013..which.charities.did.you.donate.to...80.000.Hours.
-donateAMF = imdata$Over.2013..which.charities.did.you.donate.to...Against.Malaria.Foundation.
-donateACE = imdata$Over.2013..which.charities.did.you.donate.to...Animal.Charity.Evaluators..formerly.Effective.Animal.Activism..
-donateCEA = imdata$Over.2013..which.charities.did.you.donate.to...The.Centre.for.Effective.Altruism..unrestricted.donation..
-donateCFAR = imdata$Over.2013..which.charities.did.you.donate.to...Center.For.Applied.Rationality.
-donateDTW = imdata$Over.2013..which.charities.did.you.donate.to...Deworm.the.World.
-donateGD = imdata$Over.2013..which.charities.did.you.donate.to...GiveDirectly.
-donateGW = imdata$Over.2013..which.charities.did.you.donate.to...GiveWell..itself..
-donateGWWC = imdata$Over.2013..which.charities.did.you.donate.to...Giving.What.We.Can..itself..
-donateTHL = imdata$Over.2013..which.charities.did.you.donate.to...The.Humane.League.
-donateLeverage = imdata$Over.2013..which.charities.did.you.donate.to...Leverage.Research.
-donateMIRI = imdata$Over.2013..which.charities.did.you.donate.to...Machine.Intelligence.Research.Institute.
-donatePHC = imdata$Over.2013..which.charities.did.you.donate.to...Project.Healthy.Children.
-donateSCI = imdata$Over.2013..which.charities.did.you.donate.to...Schistosomiasis.Control.Initiative..SCI..
-donateVO = imdata$Over.2013..which.charities.did.you.donate.to...Vegan.Outreach.
+donate80K <- imdata$Over.2013..which.charities.did.you.donate.to...80.000.Hours.
+donateAMF <- imdata$Over.2013..which.charities.did.you.donate.to...Against.Malaria.Foundation.
+donateACE <- imdata$Over.2013..which.charities.did.you.donate.to...Animal.Charity.Evaluators..formerly.Effective.Animal.Activism..
+donateCEA <- imdata$Over.2013..which.charities.did.you.donate.to...The.Centre.for.Effective.Altruism..unrestricted.donation..
+donateCFAR <- imdata$Over.2013..which.charities.did.you.donate.to...Center.For.Applied.Rationality.
+donateDTW <- imdata$Over.2013..which.charities.did.you.donate.to...Deworm.the.World.
+donateGD <- imdata$Over.2013..which.charities.did.you.donate.to...GiveDirectly.
+donateGW <- imdata$Over.2013..which.charities.did.you.donate.to...GiveWell..itself..
+donateGWWC <- imdata$Over.2013..which.charities.did.you.donate.to...Giving.What.We.Can..itself..
+donateTHL <- imdata$Over.2013..which.charities.did.you.donate.to...The.Humane.League.
+donateLeverage <- imdata$Over.2013..which.charities.did.you.donate.to...Leverage.Research.
+donateMIRI <- imdata$Over.2013..which.charities.did.you.donate.to...Machine.Intelligence.Research.Institute.
+donatePHC <- imdata$Over.2013..which.charities.did.you.donate.to...Project.Healthy.Children.
+donateSCI <- imdata$Over.2013..which.charities.did.you.donate.to...Schistosomiasis.Control.Initiative..SCI..
+donateVO <- imdata$Over.2013..which.charities.did.you.donate.to...Vegan.Outreach.
 
 
 # Friend Count
@@ -1738,7 +1721,7 @@ in.sample[id == 1606 | id == 1572 | id == 144 | id == 245 | id == 374 | id == 16
 
 
 ## Demographics
-heardEA = imdata_with_nonEAS$Have.you.ever.heard.of.the.term..Effective.Altruism..or..EA.. 
+heardEA = imdata_with_non_eas$Have.you.ever.heard.of.the.term..Effective.Altruism..or..EA.. 
 table(heardEA)
 length(p_inc_donate[p_inc_donate >= 80 & !is.na(p_inc_donate)])
 table(describeEA)
@@ -1814,7 +1797,19 @@ table(factors_chapter)
 
 table(donate80K)
 table(donateAMF)
-table()
+table(donateACE)
+table(donateCEA)
+table(donateCFAR)
+table(donateDTW)
+table(donateGD)
+table(donateGW)
+table(donateGWWC)
+table(donateTHL)
+table(donateLeverage)
+table(donateMIRI)
+table(donatePHC)
+table(donateSCI)
+table(donateVO)
 
 table(referrer)
 
@@ -1830,6 +1825,8 @@ sd(donate2013[describeEA == "Yes"], na.rm=T)                    # SD
 quantile(donate2013[describeEA == "Yes"], na.rm=T, probs=seq(0.1,1,len=10))  # Deciles
 quantile(donate2013[describeEA == "Yes"], na.rm=T, probs=seq(0.91,1,len=10))  # 0.9-1 Deciles 
 sum(donate2013[!is.na(donate2013) & describeEA == "Yes"])
+
+tapply()
 
 median(p_inc_donate[describeEA == "Yes"], na.rm=T)
 mean(p_inc_donate[describeEA == "Yes"], na.rm=T)
