@@ -39,12 +39,12 @@ imdata[[2]] <- Reduce(function(v,i)
 )
 
 # Remove extraneous variables
-extraneous <- c('metaethics..Other.')
+extraneous <- c('metaethics..Other.', 'diet..Other.')
 imdata <- imdata[!imdata[[2]] %in% extraneous,]
 
 # Exclude NonEAs and no answers
 imdata_with_non_eas <- imdata
-imdata <- imdata[imdata[[2]] == 'describeEA' & imdata[[3]] == 'Yes',]
+imdata <- imdata[!imdata[[1]] %in% imdata[imdata[[2]] == 'describeEA' & imdata[[3]] == 'Yes', 1],]
 
 # Clean Metaethics
 mp <- mungeplane(imdata)
@@ -59,8 +59,9 @@ imdata[imdata[[1]] %in% c(17, 45, 122, 201, 217, 377, 425, 524, 571, 971, 974, 9
 
 # Diet
 diet2df <- data.frame(Response.ID = c('ids...'), variable = c('diet2'), values =
-  sapply(imdata[imdata[[2]] == 'diet']), function(x) {
+  sapply(imdata[imdata[[2]] == 'diet'], function(x) {
     ifelse(x == 'Meat-eating', 0, 1)
+  })
 )
 imdata <- rbind(imdata, diet2df)
 
