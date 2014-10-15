@@ -11,7 +11,124 @@ setwd('~/dev/imsurvey')
 imdata <- read.csv('imdata.csv')
 
 
-### Define large transformations
+# Melt Dataframe
+library(reshape2)
+imdata <- melt(imdata, id="Response.ID")
+
+# Clean up variable names
+repl <- list(
+  'id' = 'Response.ID',
+  'describeEA' = 'Could.you..however.loosely..be.described.as..an.EA..',
+  'metaethics' = 'What.moral.philosophy.do.you.subscribe.to..if.any.',
+  'poverty' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Global.poverty.',
+  'environmentalism' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Environmentalism.',
+  'animals' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Animal.welfare.',
+  'rationality' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Improving.rationality.or.science.',
+  'politics' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Political.reform.',
+  'ai' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Existential.risk..artificial.intelligence.',
+  'xrisk' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Existential.risk..other..',
+  'farfuture' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Far.future.concerns..besides.existential.risk..',
+  'prioritization' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Cause.prioritization.',
+  'metacharity' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Meta.charities.which.direct.resources.to.these.causes.',
+  'causeother' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Other.',
+  'diet' = 'What.is.your.diet.',
+  'group' = 'How.did.you.first.hear.about..Effective.Altruism..',
+  'factors_contact' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...Personal.contact.with.an.EA.or.EAs.',
+  'factors_80K' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...80.000.Hours.',
+  'factors_TLYCS' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...The.Life.You.Can.Save.',
+  'factors_LW' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...LessWrong.',
+  'factors_GWWC' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...Giving.What.We.Can.',
+  'factors_givewell' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...GiveWell.',
+  'factors_friends' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...Friends.',
+  'factors_online' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...The.online.EA.community.',
+  'factors_chapter' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...Local.chapter.of.an.EA.organisation.',
+  'donate80K' = 'Over.2013..which.charities.did.you.donate.to...80.000.Hours.',
+  'donateAMF' = 'Over.2013..which.charities.did.you.donate.to...Against.Malaria.Foundation.',
+  'donateACE' = 'Over.2013..which.charities.did.you.donate.to...Animal.Charity.Evaluators..formerly.Effective.Animal.Activism..',
+  'donateCEA' = 'Over.2013..which.charities.did.you.donate.to...The.Centre.for.Effective.Altruism..unrestricted.donation..',
+  'donateCFAR' = 'Over.2013..which.charities.did.you.donate.to...Center.For.Applied.Rationality.',
+  'donateDTW' = 'Over.2013..which.charities.did.you.donate.to...Deworm.the.World.',
+  'donateGD' = 'Over.2013..which.charities.did.you.donate.to...GiveDirectly.',
+  'donateGW' = 'Over.2013..which.charities.did.you.donate.to...GiveWell..itself..',
+  'donateGWWC' = 'Over.2013..which.charities.did.you.donate.to...Giving.What.We.Can..itself..',
+  'donateTHL' = 'Over.2013..which.charities.did.you.donate.to...The.Humane.League.',
+  'donateLeverage' = 'Over.2013..which.charities.did.you.donate.to...Leverage.Research.',
+  'donateMIRI' = 'Over.2013..which.charities.did.you.donate.to...Machine.Intelligence.Research.Institute.',
+  'donatePHC' = 'Over.2013..which.charities.did.you.donate.to...Project.Healthy.Children.',
+  'donateSCI' = 'Over.2013..which.charities.did.you.donate.to...Schistosomiasis.Control.Initiative..SCI..',
+  'donateVO' = 'Over.2013..which.charities.did.you.donate.to...Vegan.Outreach.',
+  'friendcount' = 'Roughly.how.many.of.your.friends.would.describe.themselves.as.Effective.Altruists.',
+  'student' = 'Are.you.a.full.time.student.',
+  'career' = 'What.career.path.do.you.plan.to.follow.',
+  'donate2013' = 'Over.2013..how.much.in.total.did.you.donate.',
+  'income2013' = 'What.was.your.pre.tax.income.in.2013.'
+)
+imdata[[2]] <- Reduce(function(v,i)
+  gsub(fixed = TRUE, repl[[i]], names(repl)[i], v), seq_along(repl)
+  , imdata[[2]]
+)
+
+# Remove extraneous variables
+imdata <- imdata[!grepl('other', imdata[[2]], ignore.case=TRUE),]
+
+# Exclude NonEAs and no answers
+# imdata_with_non_eas <- imdata
+# imdata <- imdata[!imdata[[1]] %in% imdata[imdata[[2]] == 'describeEA' & imdata[[3]] == 'Yes', 1],]
+
+# Clean Metaethics
+mp <- mungeplane(imdata)
+mungebits::mungebit$new(value_replacer)$run(mp, 'metaethics', list(
+  'Consequentialist/utilitarian' = 'consequentialist',
+  'Deontology' = 'deontology',
+  'Virtue ethics' = 'virtue',
+  'Other' = 'other',
+  'No opinion, or not familiar with these terms' = 'other'
+))
+imdata[imdata[[1]] %in% c(17, 45, 122, 201, 217, 377, 425, 524, 571, 971, 974, 994, 1029, 1054, 1060, 1035, 1438, 1459, 1548, 1572, 1678, 1707) & imdata[[2]] == 'metaethics', 3] <- 'consequentialist'
+
+# Diet
+make.diet.df <- function(switch) {
+  if (switch == 'meat-eating vs. non-meat-eating') { variable = c('diet2') } else { variable = c('diet3') }
+  data.frame(Response.ID = unique(imdata[[1]]), variable = variable, value =
+    sapply(imdata[imdata[[2]] == 'diet',3], function(x) {
+      if (switch == 'meat-eating vs. non-meat-eating') {
+        ifelse(x == 'Meat-eating', 0, 1)
+      } else {
+        ifelse(x == 'Vegetarian', 1, ifelse(x == 'Vegan', 1, 0))
+      }
+    })
+  )
+}
+imdata <- rbind(imdata, make.diet.df('meat-eating vs. non-meat-eating'))
+imdata <- rbind(imdata, make.diet.df('vegetarian/vegan vs. non-'))
+
+# Group
+mp <- mungeplane(imdata)
+mungebits:::mungebit$new(value_replacer)$run(mp, 'group', list(
+  '80,000 Hours' = 'CEA',
+  'Animal Charity Evaluators (formerly Effective Animal Activism)' = 'ACE',
+  'Facebook' = 'FB',
+  'Friend' = 'Friend',
+  'GiveWell' = 'GiveWell',
+  'Giving What We Can' = 'CEA',
+  'LessWrong' = 'LW',
+  'Search engine' = 'Search',
+  'TED Talk (Peter Singer)' = 'TED',
+  'The Life You Can Save' = 'TLYCS'
+))
+swap_group <- function(swap_group, variable) {
+  sapply(names(swap_group), function(x) {
+    imdata[imdata[[1]] == x & imdata[[2]] == variable & !is.na(imdata[[1]]), 3] <<- swap_group[[x]]
+  })
+  NULL
+}
+
+# Factors
+imdata[imdata[[1]] %in% c(13, 31, 79, 110, 146, 367, 374, 383, 534, 577) & imdata[[2]] == 'factors_TLYCS', 3] <- 'Yes'
+imdata[imdata[[1]] %in% c(271) & imdata[[2]] == 'factors_givewell', 3] <- 'Yes'
+imdata[imdata[[1]] %in% c(361, 374, 606) & imdata[[2]] == 'factors_online', 3] <- 'Yes'
+
+# Groups, Careers, Income, Donations, and % Income Donated, Oh MY!
 career_transform <- list("Direct charity/non-profit work" = "Direct", "Earning to Give" = "ETG", "None" = "None", "Research" = "Research", "Other" = "None", "11" = "Research", "21" = "ETGHybrid", "36" = "Research", "47" = "ETGHybrid", "53" = "Research", "58" = "ETGHybrid", "122" = "Research", "144" = "ETGHybrid", "233" = "ETGHybrid", "265" = "Direct", "298" = "Direct", "361" = "Research", "265" = "Direct", "387" = "ETG", "393" = "ETGHybrid", "399" = "Direct", "454" = "ETGHybrid", "468" = "ETG", "499" = "ETG", "502" = "ETG", "545" = "Research", "580" = "ETG", "586" = "ETG", "587" = "ETGHybrid", "618" = "ETG", "630" = "Direct", "678" = "ETG", "694" = "ETGHybrid", "706" = "ETGHybrid", "716" = "Direct", "725" = "ETG", "738" = "Direct", "766" = "ETGHybrid", "791" = "Research", "821" = "ETG", "832" = "ETG", "852" = "Direct", "876" = "ETGHybrid", "894" = "ETGHybrid", "1253" = "ETG", "1380" = "ETGHybrid", "1474" = "Research", "1640" = "Research", "1704" = "Direct", "1735" = "ETG", "1739" = "ETG", "1762" = "ETG", "1769" = "ETG", "1786" = "Direct", "1826" = "ETG", "1837" = "Direct")
 
 group_transform <- list("11" = "Felicifia", "35" = "Friend", "37" = "CEA", "38" = "Swiss", "39" = "TLYCS", "49" = "CEA", "51" = "Swiss", "60" = "Swiss", "65" = "CEA", "71" = "Local Group", "78" = "Friend", "96" = "Swiss", "99" = "Swiss", "110" = "Felicifia", "135" = "LW", "146" = "CEA", "143" = "Local Group", "149" = "Friend", "171" = "Local Group", "173" = "Local Group", "213" = "Local Group", "220" = "Friend", "226" = "Search", "230" = "TLYCS", "239" = "Leverage", "260" = "Friend", "279" = "Search", "284" = "Swiss", "318" = "Local Group", "325" = "Friend", "330" = "CEA", "358" = "Local Group", "366" = "Local Group", "372" = "Friend", "373" = "CEA", "458" = "TLYCS", "467" = "Leverage", "506" = "CEA", "516" = "Leverage", "610" = "LW", "685" = "GiveWell", "695" = "CFAR", "724" = "TLYCS", "776" = "TLYCS", "836" = "CEA", "847" = "TLYCS", "848" = "LW", "864" = "TLYCS", "894" = "Search", "917" = "GiveWell", "935" = "Leverage", "942" = "Search", "948" = "Local Group", "959" = "Local Group", "970" = "TLYCS", "1003" = "CFAR", "1060" = "GiveWell", "1130" = "CEA", "1175" = "TLYCS", "1176" = "SSC", "1198" = "SSC", "1207" = "SSC", "1246" = "Friend", "1299" = "TLYCS", "1132" = "TLYCS", "1131" = "THINK", "1413" = "Swiss", "1414" = "Friend", "1441" = "Swiss", "1474" = "THINK", "1488" = "Felicifia", "1513" = "Felicifia", "1517" = "TLYCS", "1592" = "CFAR", "1606" = "Friend", "1611" = "Friend", "1661" = "Friend", "1689" = "CEA", "1804" = "Local Group")
@@ -188,125 +305,6 @@ income_transform <- list(
   "1871" = "27000.00", "1872" = "18186.86", "1889" = "12000.00", "1894" = "0.00" 
 )
 
-### Clean Data
-# Melt Dataframe
-library(reshape2)
-imdata <- melt(imdata, id="Response.ID")
-
-# Clean up variable names
-repl <- list(
-  'id' = 'Response.ID',
-  'describeEA' = 'Could.you..however.loosely..be.described.as..an.EA..',
-  'metaethics' = 'What.moral.philosophy.do.you.subscribe.to..if.any.',
-  'poverty' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Global.poverty.',
-  'environmentalism' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Environmentalism.',
-  'animals' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Animal.welfare.',
-  'rationality' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Improving.rationality.or.science.',
-  'politics' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Political.reform.',
-  'ai' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Existential.risk..artificial.intelligence.',
-  'xrisk' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Existential.risk..other..',
-  'farfuture' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Far.future.concerns..besides.existential.risk..',
-  'prioritization' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Cause.prioritization.',
-  'metacharity' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Meta.charities.which.direct.resources.to.these.causes.',
-  'causeother' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Other.',
-  'diet' = 'What.is.your.diet.',
-  'group' = 'How.did.you.first.hear.about..Effective.Altruism..',
-  'factors_contact' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...Personal.contact.with.an.EA.or.EAs.',
-  'factors_80K' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...80.000.Hours.',
-  'factors_TLYCS' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...The.Life.You.Can.Save.',
-  'factors_LW' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...LessWrong.',
-  'factors_GWWC' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...Giving.What.We.Can.',
-  'factors_givewell' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...GiveWell.',
-  'factors_friends' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...Friends.',
-  'factors_online' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...The.online.EA.community.',
-  'factors_chapter' = 'Which.factors.were.important.in..getting.you.into..Effective.Altruism..or.altering.your.actions.in.its.direction...Local.chapter.of.an.EA.organisation.',
-  'donate80K' = 'Over.2013..which.charities.did.you.donate.to...80.000.Hours.',
-  'donateAMF' = 'Over.2013..which.charities.did.you.donate.to...Against.Malaria.Foundation.',
-  'donateACE' = 'Over.2013..which.charities.did.you.donate.to...Animal.Charity.Evaluators..formerly.Effective.Animal.Activism..',
-  'donateCEA' = 'Over.2013..which.charities.did.you.donate.to...The.Centre.for.Effective.Altruism..unrestricted.donation..',
-  'donateCFAR' = 'Over.2013..which.charities.did.you.donate.to...Center.For.Applied.Rationality.',
-  'donateDTW' = 'Over.2013..which.charities.did.you.donate.to...Deworm.the.World.',
-  'donateGD' = 'Over.2013..which.charities.did.you.donate.to...GiveDirectly.',
-  'donateGW' = 'Over.2013..which.charities.did.you.donate.to...GiveWell..itself..',
-  'donateGWWC' = 'Over.2013..which.charities.did.you.donate.to...Giving.What.We.Can..itself..',
-  'donateTHL' = 'Over.2013..which.charities.did.you.donate.to...The.Humane.League.',
-  'donateLeverage' = 'Over.2013..which.charities.did.you.donate.to...Leverage.Research.',
-  'donateMIRI' = 'Over.2013..which.charities.did.you.donate.to...Machine.Intelligence.Research.Institute.',
-  'donatePHC' = 'Over.2013..which.charities.did.you.donate.to...Project.Healthy.Children.',
-  'donateSCI' = 'Over.2013..which.charities.did.you.donate.to...Schistosomiasis.Control.Initiative..SCI..',
-  'donateVO' = 'Over.2013..which.charities.did.you.donate.to...Vegan.Outreach.',
-  'friendcount' = 'Roughly.how.many.of.your.friends.would.describe.themselves.as.Effective.Altruists.',
-  'student' = 'Are.you.a.full.time.student.',
-  'career' = 'What.career.path.do.you.plan.to.follow.',
-  'donate2013' = 'Over.2013..how.much.in.total.did.you.donate.',
-  'income2013' = 'What.was.your.pre.tax.income.in.2013.'
-)
-imdata[[2]] <- Reduce(function(v,i)
-  gsub(fixed = TRUE, repl[[i]], names(repl)[i], v), seq_along(repl)
-  , imdata[[2]]
-)
-
-# Remove extraneous variables
-imdata <- imdata[!grepl('other', imdata[[2]], ignore.case=TRUE),]
-
-# Exclude NonEAs and no answers
-# imdata_with_non_eas <- imdata
-# imdata <- imdata[!imdata[[1]] %in% imdata[imdata[[2]] == 'describeEA' & imdata[[3]] == 'Yes', 1],]
-
-# Clean Metaethics
-mp <- mungeplane(imdata)
-mungebits::mungebit$new(value_replacer)$run(mp, 'metaethics', list(
-  'Consequentialist/utilitarian' = 'consequentialist',
-  'Deontology' = 'deontology',
-  'Virtue ethics' = 'virtue',
-  'Other' = 'other',
-  'No opinion, or not familiar with these terms' = 'other'
-))
-imdata[imdata[[1]] %in% c(17, 45, 122, 201, 217, 377, 425, 524, 571, 971, 974, 994, 1029, 1054, 1060, 1035, 1438, 1459, 1548, 1572, 1678, 1707) & imdata[[2]] == 'metaethics', 3] <- 'consequentialist'
-
-# Diet
-make.diet.df <- function(switch) {
-  if (switch == 'meat-eating vs. non-meat-eating') { variable = c('diet2') } else { variable = c('diet3') }
-  data.frame(Response.ID = unique(imdata[[1]]), variable = variable, value =
-    sapply(imdata[imdata[[2]] == 'diet',3], function(x) {
-      if (switch == 'meat-eating vs. non-meat-eating') {
-        ifelse(x == 'Meat-eating', 0, 1)
-      } else {
-        ifelse(x == 'Vegetarian', 1, ifelse(x == 'Vegan', 1, 0))
-      }
-    })
-  )
-}
-imdata <- rbind(imdata, make.diet.df('meat-eating vs. non-meat-eating'))
-imdata <- rbind(imdata, make.diet.df('vegetarian/vegan vs. non-'))
-
-# Group
-mp <- mungeplane(imdata)
-mungebits:::mungebit$new(value_replacer)$run(mp, 'group', list(
-  '80,000 Hours' = 'CEA',
-  'Animal Charity Evaluators (formerly Effective Animal Activism)' = 'ACE',
-  'Facebook' = 'FB',
-  'Friend' = 'Friend',
-  'GiveWell' = 'GiveWell',
-  'Giving What We Can' = 'CEA',
-  'LessWrong' = 'LW',
-  'Search engine' = 'Search',
-  'TED Talk (Peter Singer)' = 'TED',
-  'The Life You Can Save' = 'TLYCS'
-))
-swap_group <- function(swap_group, variable) {
-  sapply(names(swap_group), function(x) {
-    imdata[imdata[[1]] == x & imdata[[2]] == variable & !is.na(imdata[[1]]), 3] <<- swap_group[[x]]
-  })
-  NULL
-}
-
-# Factors
-imdata[imdata[[1]] %in% c(13, 31, 79, 110, 146, 367, 374, 383, 534, 577) & imdata[[2]] == 'factors_TLYCS', 3] <- 'Yes'
-imdata[imdata[[1]] %in% c(271) & imdata[[2]] == 'factors_givewell', 3] <- 'Yes'
-imdata[imdata[[1]] %in% c(361, 374, 606) & imdata[[2]] == 'factors_online', 3] <- 'Yes'
-
-# Groups, Careers, Income, Donations, and % Income Donated, Oh MY!
 swap_group(career_transform, 'career')
 swap_group(group_transform, 'group')
 swap_group(donate_transform, 'donation')
