@@ -323,21 +323,13 @@ swap_group(income_transform, 'income2013')
 
 p_inc_donate_df <- data.frame(Response.ID = unique(imdata[[1]]), variable = c('p_inc_donate'), value =
   sapply(imdata[imdata[[2]] == 'income2013',1], function(x) {
-    donated <- imdata[imdata[[1]] == x & imdata[[2]] == 'donate2013', 3]
-    income <- imdata[imdata[[1]] == x & imdata[[2]] == 'income2013', 3]
-    as.numeric(donated/income)
-    }
-  )
+    donated <- as.numeric(imdata[imdata[[1]] == x & imdata[[2]] == 'donate2013', 3][[1]])
+    income <- as.numeric(imdata[imdata[[1]] == x & imdata[[2]] == 'income2013', 3][[1]])
+    if (is.na(income) || !income) return(NA)
+    (donated / income) * 100
+  })
 )
 imdata <- rbind(imdata, p_inc_donate_df)
-
-
-
-
-# Percent income donated for nonstudents
-p_inc_donate = as.numeric(donate2013 / income_2013)*100
-p_inc_donate[p_inc_donate == Inf] <- NA                     # Throw out people who donate despite having no income
-p_inc_donatens = p_inc_donate[student == "Yes"]
 
 
 # Referral URL
