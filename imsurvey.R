@@ -116,6 +116,23 @@ mungebits:::mungebit$new(value_replacer)$run(mp, 'group', list(
   'TED Talk (Peter Singer)' = 'TED',
   'The Life You Can Save' = 'TLYCS'
 ))
+
+# Factors
+imdata[imdata[[1]] %in% c(13, 31, 79, 110, 146, 367, 374, 383, 534, 577) & imdata[[2]] == 'factors_TLYCS', 3] <- 'Yes'
+imdata[imdata[[1]] %in% c(271) & imdata[[2]] == 'factors_givewell', 3] <- 'Yes'
+imdata[imdata[[1]] %in% c(361, 374, 606) & imdata[[2]] == 'factors_online', 3] <- 'Yes'
+
+# Careers
+mungebits:::mungebit$new(value_replacer)$run(mp, 'career', list(
+  "Direct charity/non-profit work" = "Direct",
+  "Earning to Give" = "ETG",
+  "None" = "None",
+  "Research" = "Research",
+  "Other" = "None"
+))
+                                                         
+# Conversion/Interpolation for Groups, Careers, Income, Donations, and % Income Donated, Oh MY!
+# Swaps that map an ID to what value they ought to have (convert currencies and interpolates Other categories)
 swap_group <- function(swap_group, variable) {
   sapply(names(swap_group), function(x) {
     imdata[imdata[[1]] == x & imdata[[2]] == variable & !is.na(imdata[[1]]), 3] <<- swap_group[[x]]
@@ -123,13 +140,7 @@ swap_group <- function(swap_group, variable) {
   NULL
 }
 
-# Factors
-imdata[imdata[[1]] %in% c(13, 31, 79, 110, 146, 367, 374, 383, 534, 577) & imdata[[2]] == 'factors_TLYCS', 3] <- 'Yes'
-imdata[imdata[[1]] %in% c(271) & imdata[[2]] == 'factors_givewell', 3] <- 'Yes'
-imdata[imdata[[1]] %in% c(361, 374, 606) & imdata[[2]] == 'factors_online', 3] <- 'Yes'
-
-# Groups, Careers, Income, Donations, and % Income Donated, Oh MY!
-career_transform <- list("Direct charity/non-profit work" = "Direct", "Earning to Give" = "ETG", "None" = "None", "Research" = "Research", "Other" = "None", "11" = "Research", "21" = "ETGHybrid", "36" = "Research", "47" = "ETGHybrid", "53" = "Research", "58" = "ETGHybrid", "122" = "Research", "144" = "ETGHybrid", "233" = "ETGHybrid", "265" = "Direct", "298" = "Direct", "361" = "Research", "265" = "Direct", "387" = "ETG", "393" = "ETGHybrid", "399" = "Direct", "454" = "ETGHybrid", "468" = "ETG", "499" = "ETG", "502" = "ETG", "545" = "Research", "580" = "ETG", "586" = "ETG", "587" = "ETGHybrid", "618" = "ETG", "630" = "Direct", "678" = "ETG", "694" = "ETGHybrid", "706" = "ETGHybrid", "716" = "Direct", "725" = "ETG", "738" = "Direct", "766" = "ETGHybrid", "791" = "Research", "821" = "ETG", "832" = "ETG", "852" = "Direct", "876" = "ETGHybrid", "894" = "ETGHybrid", "1253" = "ETG", "1380" = "ETGHybrid", "1474" = "Research", "1640" = "Research", "1704" = "Direct", "1735" = "ETG", "1739" = "ETG", "1762" = "ETG", "1769" = "ETG", "1786" = "Direct", "1826" = "ETG", "1837" = "Direct")
+career_transform <i list("11" = "Research", "21" = "ETGHybrid", "36" = "Research", "47" = "ETGHybrid", "53" = "Research", "58" = "ETGHybrid", "122" = "Research", "144" = "ETGHybrid", "233" = "ETGHybrid", "265" = "Direct", "298" = "Direct", "361" = "Research", "265" = "Direct", "387" = "ETG", "393" = "ETGHybrid", "399" = "Direct", "454" = "ETGHybrid", "468" = "ETG", "499" = "ETG", "502" = "ETG", "545" = "Research", "580" = "ETG", "586" = "ETG", "587" = "ETGHybrid", "618" = "ETG", "630" = "Direct", "678" = "ETG", "694" = "ETGHybrid", "706" = "ETGHybrid", "716" = "Direct", "725" = "ETG", "738" = "Direct", "766" = "ETGHybrid", "791" = "Research", "821" = "ETG", "832" = "ETG", "852" = "Direct", "876" = "ETGHybrid", "894" = "ETGHybrid", "1253" = "ETG", "1380" = "ETGHybrid", "1474" = "Research", "1640" = "Research", "1704" = "Direct", "1735" = "ETG", "1739" = "ETG", "1762" = "ETG", "1769" = "ETG", "1786" = "Direct", "1826" = "ETG", "1837" = "Direct")
 
 group_transform <- list("11" = "Felicifia", "35" = "Friend", "37" = "CEA", "38" = "Swiss", "39" = "TLYCS", "49" = "CEA", "51" = "Swiss", "60" = "Swiss", "65" = "CEA", "71" = "Local Group", "78" = "Friend", "96" = "Swiss", "99" = "Swiss", "110" = "Felicifia", "135" = "LW", "146" = "CEA", "143" = "Local Group", "149" = "Friend", "171" = "Local Group", "173" = "Local Group", "213" = "Local Group", "220" = "Friend", "226" = "Search", "230" = "TLYCS", "239" = "Leverage", "260" = "Friend", "279" = "Search", "284" = "Swiss", "318" = "Local Group", "325" = "Friend", "330" = "CEA", "358" = "Local Group", "366" = "Local Group", "372" = "Friend", "373" = "CEA", "458" = "TLYCS", "467" = "Leverage", "506" = "CEA", "516" = "Leverage", "610" = "LW", "685" = "GiveWell", "695" = "CFAR", "724" = "TLYCS", "776" = "TLYCS", "836" = "CEA", "847" = "TLYCS", "848" = "LW", "864" = "TLYCS", "894" = "Search", "917" = "GiveWell", "935" = "Leverage", "942" = "Search", "948" = "Local Group", "959" = "Local Group", "970" = "TLYCS", "1003" = "CFAR", "1060" = "GiveWell", "1130" = "CEA", "1175" = "TLYCS", "1176" = "SSC", "1198" = "SSC", "1207" = "SSC", "1246" = "Friend", "1299" = "TLYCS", "1132" = "TLYCS", "1131" = "THINK", "1413" = "Swiss", "1414" = "Friend", "1441" = "Swiss", "1474" = "THINK", "1488" = "Felicifia", "1513" = "Felicifia", "1517" = "TLYCS", "1592" = "CFAR", "1606" = "Friend", "1611" = "Friend", "1661" = "Friend", "1689" = "CEA", "1804" = "Local Group")
 
@@ -307,12 +318,14 @@ income_transform <- list(
 
 swap_group(career_transform, 'career')
 swap_group(group_transform, 'group')
-swap_group(donate_transform, 'donation')
-swap_group(income_transform, 'income')
+swap_group(donate_transform, 'donate2013')
+swap_group(income_transform, 'income2013')
 
-p_inc_donate_df <- data.frame(Response.ID = unique(imdata[[1]]), variable = 'p_inc_donate', value =
-  sapply(imdata[imdata[[2]] == 'income_2013',3], function(x) {
-    as.numeric(imdata[imdata[[2]] == 'donate2013',3] / imdata[imdata[[2]] == 'income2013',3]) 
+p_inc_donate_df <- data.frame(Response.ID = unique(imdata[[1]]), variable = c('p_inc_donate'), value =
+  sapply(imdata[imdata[[2]] == 'income2013',1], function(x) {
+    donated <- imdata[imdata[[1]] == x & imdata[[2]] == 'donate2013', 3]
+    income <- imdata[imdata[[1]] == x & imdata[[2]] == 'income2013', 3]
+    as.numeric(donated/income)
     }
   )
 )
