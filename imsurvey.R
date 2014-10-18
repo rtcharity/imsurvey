@@ -15,6 +15,14 @@ swap_by_value <- function(swap_list, var_name) {
   })
   NULL
 }
+make_new_var <- function(new_var_name, defining_fn) {
+  imdata <<- rbind(imdata, data.frame(
+    Response.ID = unique(imdata[[1]]),
+    variable = new_var_name,
+    value = do.call(defining_fn, list())
+  ))
+  NULL
+}
 
 
 ### Read Data
@@ -99,20 +107,27 @@ swap_by_value(list(
 imdata[imdata[[1]] %in% c(17, 45, 122, 201, 217, 377, 425, 524, 571, 971, 974, 994, 1029, 1054, 1060, 1035, 1438, 1459, 1548, 1572, 1678, 1707) & imdata[[2]] == 'metaethics', 3] <- 'consequentialist'
 
 # Diet
-make.diet.df <- function(switch) {
-  if (switch == 'meat-eating vs. non-meat-eating') { variable = c('diet2') } else { variable = c('diet3') }
-  data.frame(Response.ID = unique(imdata[[1]]), variable = variable, value =
-    sapply(imdata[imdata[[2]] == 'diet',3], function(x) {
-      if (switch == 'meat-eating vs. non-meat-eating') {
-        ifelse(x == 'Meat-eating', 0, 1)
-      } else {
-        ifelse(x == 'Vegetarian', 1, ifelse(x == 'Vegan', 1, 0))
-      }
-    })
-  )
+new_diet_variable <- function(switch) {
+  if (switch == 'meat-eating vs. non-meat-eating') {
+    variable = c('diet2')
+  } else {
+    variable = c('diet3')
+  }
+  sub_defining_fn <- if (switch == 'meat-eating vs. non-meat-eating') {
+      function(x) ifelse(x == 'Meat-eating', 0, 1)
+    } else {
+      function(x) ifelse(x == 'Vegetarian', 1, ifelse(x == 'Vegan', 1, 0))
+    }
+  defining_fn <- function() {
+    sapply(
+      imdata[imdata[[2]] == 'diet', 3],
+      function(x) do.call(sub_defining_fn, list(x))
+    )
+  }
+  make_new_var(variable, defining_fn)
 }
-imdata <- rbind(imdata, make.diet.df('meat-eating vs. non-meat-eating'))
-imdata <- rbind(imdata, make.diet.df('vegetarian/vegan vs. non-'))
+new_diet_variable('meat-eating vs. non-meat-eating')
+new_diet_variable('vegetarian/vegan vs. non-')
 
 # Group
 swap_by_value(list(
@@ -350,7 +365,6 @@ swap_by_value(list(
   't' = 'Personal',
   'p' = 'Personal'
 ), 'referrer')
-
 
 # In the Random Sample?
 in.sample = rep(FALSE, 768)
