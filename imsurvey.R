@@ -1,9 +1,20 @@
 ### Libraries
 if (!require(reshape2)) install.packages('reshape2'); require(reshape2)
-if (!require(devtools)) install.packages('devtools'); require(devtools)
-if (!require(mungebits)) install_github('robertzk/mungebits'); require(mungebits)
-if (!require(syberiaMungebits)) install_github('robertzk/syberiaMungebits'); require(syberiaMungebits)
-if (!require(s3mpi)) install_github('robertzk/s3mpi'); require(s3mpi)
+
+
+### Define Functions
+swap_by_ids <- function(swap_list, variable) {
+  sapply(names(swap_list), function(id) {
+    imdata[imdata[[1]] == id & imdata[[2]] == variable & !is.na(imdata[[1]]), 3] <<- swap_list[[id]]
+  })
+  NULL
+}
+swap_by_value <- function(swap_list, var_name) {
+  sapply(names(swap_list), function(x) {
+    imdata[imdata[[2]] == var_name & imdata[[3]] == x, 3] <<- swap_list[[x]]
+  })
+  NULL
+}
 
 
 ### Read Data
@@ -12,8 +23,8 @@ imdata <- read.csv('imdata.csv')
 
 
 # Melt Dataframe
-library(reshape2)
 imdata <- melt(imdata, id="Response.ID")
+
 
 # Clean up variable names
 repl <- list(
@@ -61,7 +72,8 @@ repl <- list(
   'student' = 'Are.you.a.full.time.student.',
   'career' = 'What.career.path.do.you.plan.to.follow.',
   'donate2013' = 'Over.2013..how.much.in.total.did.you.donate.',
-  'income2013' = 'What.was.your.pre.tax.income.in.2013.'
+  'income2013' = 'What.was.your.pre.tax.income.in.2013.',
+  'referrer' = 'Referrer.URL'
 )
 imdata[[2]] <- Reduce(function(v,i)
   gsub(fixed = TRUE, repl[[i]], names(repl)[i], v), seq_along(repl)
@@ -76,14 +88,14 @@ imdata <- imdata[!grepl('other', imdata[[2]], ignore.case=TRUE),]
 # imdata <- imdata[!imdata[[1]] %in% imdata[imdata[[2]] == 'describeEA' & imdata[[3]] == 'Yes', 1],]
 
 # Clean Metaethics
-mp <- mungeplane(imdata)
-mungebits::mungebit$new(value_replacer)$run(mp, 'metaethics', list(
+
+swap_by_value(list(
   'Consequentialist/utilitarian' = 'consequentialist',
   'Deontology' = 'deontology',
   'Virtue ethics' = 'virtue',
   'Other' = 'other',
   'No opinion, or not familiar with these terms' = 'other'
-))
+), 'metaethics')
 imdata[imdata[[1]] %in% c(17, 45, 122, 201, 217, 377, 425, 524, 571, 971, 974, 994, 1029, 1054, 1060, 1035, 1438, 1459, 1548, 1572, 1678, 1707) & imdata[[2]] == 'metaethics', 3] <- 'consequentialist'
 
 # Diet
@@ -103,8 +115,7 @@ imdata <- rbind(imdata, make.diet.df('meat-eating vs. non-meat-eating'))
 imdata <- rbind(imdata, make.diet.df('vegetarian/vegan vs. non-'))
 
 # Group
-mp <- mungeplane(imdata)
-mungebits:::mungebit$new(value_replacer)$run(mp, 'group', list(
+swap_by_value(list(
   '80,000 Hours' = 'CEA',
   'Animal Charity Evaluators (formerly Effective Animal Activism)' = 'ACE',
   'Facebook' = 'FB',
@@ -115,7 +126,7 @@ mungebits:::mungebit$new(value_replacer)$run(mp, 'group', list(
   'Search engine' = 'Search',
   'TED Talk (Peter Singer)' = 'TED',
   'The Life You Can Save' = 'TLYCS'
-))
+), 'group')
 
 # Factors
 imdata[imdata[[1]] %in% c(13, 31, 79, 110, 146, 367, 374, 383, 534, 577) & imdata[[2]] == 'factors_TLYCS', 3] <- 'Yes'
@@ -123,24 +134,17 @@ imdata[imdata[[1]] %in% c(271) & imdata[[2]] == 'factors_givewell', 3] <- 'Yes'
 imdata[imdata[[1]] %in% c(361, 374, 606) & imdata[[2]] == 'factors_online', 3] <- 'Yes'
 
 # Careers
-mungebits:::mungebit$new(value_replacer)$run(mp, 'career', list(
+swap_by_value(list(
   "Direct charity/non-profit work" = "Direct",
   "Earning to Give" = "ETG",
   "None" = "None",
   "Research" = "Research",
   "Other" = "None"
-))
+), 'career')
+
                                                          
 # Conversion/Interpolation for Groups, Careers, Income, Donations, and % Income Donated, Oh MY!
-# Swaps that map an ID to what value they ought to have (convert currencies and interpolates Other categories)
-swap_group <- function(swap_group, variable) {
-  sapply(names(swap_group), function(x) {
-    imdata[imdata[[1]] == x & imdata[[2]] == variable & !is.na(imdata[[1]]), 3] <<- swap_group[[x]]
-  })
-  NULL
-}
-
-career_transform <i list("11" = "Research", "21" = "ETGHybrid", "36" = "Research", "47" = "ETGHybrid", "53" = "Research", "58" = "ETGHybrid", "122" = "Research", "144" = "ETGHybrid", "233" = "ETGHybrid", "265" = "Direct", "298" = "Direct", "361" = "Research", "265" = "Direct", "387" = "ETG", "393" = "ETGHybrid", "399" = "Direct", "454" = "ETGHybrid", "468" = "ETG", "499" = "ETG", "502" = "ETG", "545" = "Research", "580" = "ETG", "586" = "ETG", "587" = "ETGHybrid", "618" = "ETG", "630" = "Direct", "678" = "ETG", "694" = "ETGHybrid", "706" = "ETGHybrid", "716" = "Direct", "725" = "ETG", "738" = "Direct", "766" = "ETGHybrid", "791" = "Research", "821" = "ETG", "832" = "ETG", "852" = "Direct", "876" = "ETGHybrid", "894" = "ETGHybrid", "1253" = "ETG", "1380" = "ETGHybrid", "1474" = "Research", "1640" = "Research", "1704" = "Direct", "1735" = "ETG", "1739" = "ETG", "1762" = "ETG", "1769" = "ETG", "1786" = "Direct", "1826" = "ETG", "1837" = "Direct")
+career_transform <- list("11" = "Research", "21" = "ETGHybrid", "36" = "Research", "47" = "ETGHybrid", "53" = "Research", "58" = "ETGHybrid", "122" = "Research", "144" = "ETGHybrid", "233" = "ETGHybrid", "265" = "Direct", "298" = "Direct", "361" = "Research", "265" = "Direct", "387" = "ETG", "393" = "ETGHybrid", "399" = "Direct", "454" = "ETGHybrid", "468" = "ETG", "499" = "ETG", "502" = "ETG", "545" = "Research", "580" = "ETG", "586" = "ETG", "587" = "ETGHybrid", "618" = "ETG", "630" = "Direct", "678" = "ETG", "694" = "ETGHybrid", "706" = "ETGHybrid", "716" = "Direct", "725" = "ETG", "738" = "Direct", "766" = "ETGHybrid", "791" = "Research", "821" = "ETG", "832" = "ETG", "852" = "Direct", "876" = "ETGHybrid", "894" = "ETGHybrid", "1253" = "ETG", "1380" = "ETGHybrid", "1474" = "Research", "1640" = "Research", "1704" = "Direct", "1735" = "ETG", "1739" = "ETG", "1762" = "ETG", "1769" = "ETG", "1786" = "Direct", "1826" = "ETG", "1837" = "Direct")
 
 group_transform <- list("11" = "Felicifia", "35" = "Friend", "37" = "CEA", "38" = "Swiss", "39" = "TLYCS", "49" = "CEA", "51" = "Swiss", "60" = "Swiss", "65" = "CEA", "71" = "Local Group", "78" = "Friend", "96" = "Swiss", "99" = "Swiss", "110" = "Felicifia", "135" = "LW", "146" = "CEA", "143" = "Local Group", "149" = "Friend", "171" = "Local Group", "173" = "Local Group", "213" = "Local Group", "220" = "Friend", "226" = "Search", "230" = "TLYCS", "239" = "Leverage", "260" = "Friend", "279" = "Search", "284" = "Swiss", "318" = "Local Group", "325" = "Friend", "330" = "CEA", "358" = "Local Group", "366" = "Local Group", "372" = "Friend", "373" = "CEA", "458" = "TLYCS", "467" = "Leverage", "506" = "CEA", "516" = "Leverage", "610" = "LW", "685" = "GiveWell", "695" = "CFAR", "724" = "TLYCS", "776" = "TLYCS", "836" = "CEA", "847" = "TLYCS", "848" = "LW", "864" = "TLYCS", "894" = "Search", "917" = "GiveWell", "935" = "Leverage", "942" = "Search", "948" = "Local Group", "959" = "Local Group", "970" = "TLYCS", "1003" = "CFAR", "1060" = "GiveWell", "1130" = "CEA", "1175" = "TLYCS", "1176" = "SSC", "1198" = "SSC", "1207" = "SSC", "1246" = "Friend", "1299" = "TLYCS", "1132" = "TLYCS", "1131" = "THINK", "1413" = "Swiss", "1414" = "Friend", "1441" = "Swiss", "1474" = "THINK", "1488" = "Felicifia", "1513" = "Felicifia", "1517" = "TLYCS", "1592" = "CFAR", "1606" = "Friend", "1611" = "Friend", "1661" = "Friend", "1689" = "CEA", "1804" = "Local Group")
 
@@ -316,10 +320,10 @@ income_transform <- list(
   "1871" = "27000.00", "1872" = "18186.86", "1889" = "12000.00", "1894" = "0.00" 
 )
 
-swap_group(career_transform, 'career')
-swap_group(group_transform, 'group')
-swap_group(donate_transform, 'donate2013')
-swap_group(income_transform, 'income2013')
+swap_by_ids(career_transform, 'career')
+swap_by_ids(group_transform, 'group')
+swap_by_ids(donate_transform, 'donate2013')
+swap_by_ids(income_transform, 'income2013')
 
 p_inc_donate_df <- data.frame(Response.ID = unique(imdata[[1]]), variable = c('p_inc_donate'), value =
   sapply(imdata[imdata[[2]] == 'income2013',1], function(x) {
@@ -331,19 +335,21 @@ p_inc_donate_df <- data.frame(Response.ID = unique(imdata[[1]]), variable = c('p
 )
 imdata <- rbind(imdata, p_inc_donate_df)
 
-
-# Referral URL
-referrer = rep(NA, 768)
-referrerfeed <- sapply(strsplit(imdata$Referrer.URL, "\\?"), "[", 2)
-referrer[referrerfeed == 's=9'] <- 'EAFB'
-referrer[referrerfeed == 's=14'] <- 'LW'
-referrer[referrerfeed == 's=18'] <- 'OtherFB'
-referrer[referrerfeed == 's=19'] <- 'Special'
-referrer[referrerfeed == 'rockstar'] <- 'Rockstar'
-referrer[referrerfeed == 'eah-profiles'] <- 'EA Profiles'
-referrer[referrerfeed == 'p'] <- 'Peter'
-referrer[substring(referrerfeed, 1, 1) == 't'] <- 'Tom'
-
+# Clean Referral URL
+imdata[imdata[[2]] == "referrer",3] <- sapply(strsplit(imdata[imdata[[2]] == "referrer",3], "\\?"), "[", 2)
+imdata[imdata[[2]] == "referrer" & is.na(imdata[[3]]),3] <- ""
+imdata[imdata[[2]] == "referrer" & nchar(imdata[[3]]) > 12,3] <- ""
+imdata[imdata[[2]] == 'referrer' & substring(imdata[[3]],1,1)=='t' & !is.na(imdata[[3]]), 3] <- 't'
+swap_by_value(list(
+  's=9' = 'EAFB',
+  's=14' = 'LW',
+  's=18' = 'OtherFB',
+  's=19' = 'Special',
+  'rockstar' = 'Rockstar',
+  'eah-profiles' = 'EA Profiles',
+  't' = 'Personal',
+  'p' = 'Personal'
+), 'referrer')
 
 
 # In the Random Sample?
