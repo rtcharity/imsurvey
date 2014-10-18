@@ -19,7 +19,7 @@ make_new_var <- function(new_var_name, defining_fn) {
   imdata <<- rbind(imdata, data.frame(
     Response.ID = unique(imdata[[1]]),
     variable = new_var_name,
-    value = do.call(defining_fn, list())
+    value = defining_fn()
   ))
   NULL
 }
@@ -119,10 +119,7 @@ new_diet_variable <- function(switch) {
       function(x) ifelse(x == 'Vegetarian', 1, ifelse(x == 'Vegan', 1, 0))
     }
   defining_fn <- function() {
-    sapply(
-      imdata[imdata[[2]] == 'diet', 3],
-      function(x) do.call(sub_defining_fn, list(x))
-    )
+    sapply(imdata[imdata[[2]] == 'diet', 3], sub_defining_fn)
   }
   make_new_var(variable, defining_fn)
 }
