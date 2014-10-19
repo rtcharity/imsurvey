@@ -1,5 +1,7 @@
 ### Libraries
 if (!require(reshape2)) install.packages('reshape2'); require(reshape2)
+if (!require(devtools)) install.packages('devtools'); require(devtools)
+if (!require(Ramd)) install_github('robertzk/Ramd'); require(Ramd)
 
 
 ### Define Functions
@@ -23,12 +25,32 @@ make_new_var <- function(new_var_name, definition) {
   ))
   NULL
 }
-fetch <- function(var_name, col = 3, select = NULL) {
-  output <- imdata[imdata[[2]] == var_name, col]
-  if (!is.null(select)) output <- output[output == select]
+fetch <- function(var_name, data, col = 3, by_id = 0, select = NULL, na.rm = TRUE) {
+  if (by_id != 0) data <- data[data[[1]] == by_id,]
+  if (!is.null(select)) data <- data[data[[3]] == select,]
+  if (!identical(col, 'all')) {
+    output <- data[data[[2]] == var_name, col]
+  } else {
+    output <- data[data[[2]] == var_name, ]
+    na.rm = FALSE
+  }
+  if (isTRUE(na.rm)) output <- output[!is.na(output) & output != "" & output != "NA" & output != "N/A"]
   output
 }
-
+fetch_by <- function(first_var, by_var, data, select) {
+  ids <- fetch(by_var, select = select, data = data, col = 1)
+  data[data[[1]] %in% ids & data[[2]] == first_var, 3]
+}
+run_fn <- function(fetch_group, fn, ...) {
+  fn(as.numeric(fetch_group), na.rm = TRUE, ...)
+}
+breakdown <- function(var, data, seq) {
+  sapply(seq, function(x) {
+    y <- as.numeric(fetch(var, data = data))
+    print(paste(x, length(y[y > x]), collapse = ':'))
+  })
+  NULL
+}
 
 ### Read Data
 setwd('~/dev/imsurvey')
@@ -86,7 +108,13 @@ repl <- list(
   'career' = 'What.career.path.do.you.plan.to.follow.',
   'donate2013' = 'Over.2013..how.much.in.total.did.you.donate.',
   'income2013' = 'What.was.your.pre.tax.income.in.2013.',
-  'referrer' = 'Referrer.URL'
+  'referrer' = 'Referrer.URL',
+  'heardEA' = 'Have.you.ever.heard.of.the.term..Effective.Altruism..or..EA..',
+  'gender' = 'Your.gender',
+  'age' = 'Your.age',
+  'religion' = 'Your.religious.beliefs',
+  'location' = 'In.which.country.do.you.live.',
+  'sublocation' = 'In.which.city.do.you.live.'
 )
 imdata[[2]] <- Reduce(function(v,i)
   gsub(fixed = TRUE, repl[[i]], names(repl)[i], v), seq_along(repl)
@@ -96,12 +124,7 @@ imdata[[2]] <- Reduce(function(v,i)
 # Remove extraneous variables
 imdata <- imdata[!grepl('other', imdata[[2]], ignore.case=TRUE),]
 
-# Exclude NonEAs and no answers
-# imdata_with_non_eas <- imdata
-# imdata <- imdata[!imdata[[1]] %in% imdata[imdata[[2]] == 'describeEA' & imdata[[3]] == 'Yes', 1],]
-
 # Clean Metaethics
-
 swap_by_value(list(
   'Consequentialist/utilitarian' = 'consequentialist',
   'Deontology' = 'deontology',
@@ -123,7 +146,10 @@ new_diet_variable <- function(switch) {
     } else {
       function(x) ifelse(x == 'Vegetarian', 1, ifelse(x == 'Vegan', 1, 0))
     }
-  make_new_var(variable, sapply(fetch('diet'), sub_definition))
+  make_new_var(variable, sapply(
+    fetch('diet', data = imdata, na.rm = FALSE),
+    sub_definition
+  ))
 }
 new_diet_variable('meat-eating vs. non-meat-eating')
 new_diet_variable('vegetarian/vegan vs. non-')
@@ -132,6 +158,7 @@ new_diet_variable('vegetarian/vegan vs. non-')
 swap_by_value(list(
   '80,000 Hours' = 'CEA',
   'Animal Charity Evaluators (formerly Effective Animal Activism)' = 'ACE',
+  'Animal Charity Evaluators (formerly Effective Animal Activism)' = 'ACE',
   'Facebook' = 'FB',
   'Friend' = 'Friend',
   'GiveWell' = 'GiveWell',
@@ -140,7 +167,7 @@ swap_by_value(list(
   'Search engine' = 'Search',
   'TED Talk (Peter Singer)' = 'TED',
   'The Life You Can Save' = 'TLYCS'
-), 'group')
+), 'group') # Having ACE twice is because one has a space and one has a tab.
 
 # Factors
 imdata[imdata[[1]] %in% c(13, 31, 79, 110, 146, 367, 374, 383, 534, 577) & imdata[[2]] == 'factors_TLYCS', 3] <- 'Yes'
@@ -358,7 +385,7 @@ swap_by_value(list(
   's=14' = 'LW',
   's=18' = 'OtherFB',
   's=19' = 'Special',
-  'rockstar' = 'Rockstar',
+  'rockstar' = 'Personal',
   'eah-profiles' = 'EA Profiles',
   't' = 'Personal',
   'p' = 'Personal'
@@ -372,27 +399,80 @@ make_new_var('in_random_fb_sample',
   })
 )
 
+# Exclude NonEAs and no answers
+imdata_with_non_eas <- imdata
+imdata <- imdata[imdata[[1]] %in% imdata[imdata[[2]] == 'describeEA' & imdata[[3]] == 'Yes', 1],]
+
 
 ## Demographics
-heardEA = imdata_with_non_eas$Have.you.ever.heard.of.the.term..Effective.Altruism..or..EA.. 
-table(heardEA)
-length(p_inc_donate[p_inc_donate >= 80 & !is.na(p_inc_donate)])
-table(describeEA)
-table(heardEA, describeEA)
-gender = imdata$Your.gender
-table(gender)
-age = imdata$Your.age
-numeric_ages <- as.numeric(age[!is.na(age) & age != ""])
-median(numeric_ages[!is.na(numeric_ages)])
-mean(numeric_ages[!is.na(numeric_ages)])
-sd(numeric_ages[!is.na(numeric_ages)])
-location = imdata$In.which.country.do.you.live.
-sort(table(location))
-sublocation = imdata$In.which.city.do.you.live.
-sort(table(sublocation))
-religion = imdata$Your.religious.beliefs
-sort(table(religion))
-table(student)
+table(fetch('heardEA', data = imdata_with_non_eas))
+table(fetch('describeEA', data = imdata_with_non_eas))
+table(
+  fetch('heardEA', data = imdata_with_non_eas, na.rm = FALSE),
+  fetch('describeEA', data = imdata_with_non_eas, na.rm = FALSE)
+)
+table(fetch('gender', data = imdata))
+
+run_fn(fetch('age', data = imdata), mean)
+run_fn(fetch('age', data = imdata), median)
+run_fn(fetch('age', data = imdata), sd)
+
+sort(table(fetch('religion', data = imdata)))
+table(fetch(data = imdata, 'student'))
+sort(table(fetch('location', data = imdata)))
+sort(table(fetch('sublocation', data = imdata)))
+table(fetch('friendcount', data = imdata))
+
+sort(table(fetch('group', data = imdata)))
+sort(table(fetch('referrer', data = imdata)))
+
+factors = c('contact', '80K', 'TLYCS', 'LW', 'GWWC', 'givewell', 'friends', 'online', 'chapter')
+sapply(factors, function(x) table(fetch(pp("factors_#{x}"), data = imdata)))
+
+table(fetch('metaethics', data = imdata))
+
+length(fetch('donate2013', data = imdata_with_non_eas))
+length(fetch('donate2013', data = imdata))
+length(fetch('donate2013', select = 0, data = imdata_with_non_eas))
+length(fetch('donate2013', select = 0, data = imdata))
+
+run_fn(fetch('donate2013', data = imdata), mean)
+run_fn(fetch('donate2013', data = imdata), median)
+
+run_fn(fetch_by('donate2013', data = imdata, 'student', 'No'), median)
+run_fn(fetch_by('donate2013', data = imdata, 'student', 'Yes'), median)
+
+run_fn(
+  fetch('donate2013', data = imdata),
+  quantile,
+  probs = seq(0.1, 1, len = 10)
+)
+run_fn(
+  fetch('donate2013', data = imdata),
+  quantile,
+  probs = seq(0.91, 1, len = 10)
+)
+run_fn(fetch('donate2013', data = imdata), sum)
+
+run_fn(fetch('p_inc_donate', data = imdata), mean)
+run_fn(fetch('p_inc_donate', data = imdata), median)
+run_fn(fetch_by('p_inc_donate', data = imdata, 'student', 'No'), median)
+
+ids_of_10K_or_more <- imdata[
+  imdata[[2]] == 'income2013' &
+    as.numeric(imdata[[3]]) > 10000 &
+    !is.na(as.numeric(imdata[[3]])), 1
+]
+imdata_of_10K_or_more <- imdata[imdata[[1]] %in% ids_of_10K_or_more,]
+length(fetch('p_inc_donate', data = imdata_of_10K_or_more, na.rm = TRUE))
+breakdown(
+  'p_inc_donate',
+  data = imdata_of_10K_or_more,
+  seq = c(seq(1,3), 5, seq(10,20,by=5), seq(30,90,by=10)) 
+)
+
+#===================
+
 table(diet)
 table(diet2)
 table(diet, animals)
@@ -466,43 +546,6 @@ table(donateVO)
 
 table(referrer)
 
-## Descriptive Stats for 2013 Donations
-sum(!is.na(donate2013))                    # Number of records
-mean(donate2013[describeEA == "Yes"], na.rm=T)                  # Mean
-median(donate2013[describeEA == "Yes"], na.rm=T)                # Median
-median(donate2013[describeEA == "No"], na.rm=T)                # Median
-median(donate2013[student == "No" & describeEA == "Yes"], na.rm=T)                # Non-student Median
-median(donate2013[student == "Yes" & describeEA == "Yes"], na.rm=T)                # Student Median
-median(donate2013[student == "No" & describeEA == "Yes" & (career == "ETG" || career == "ETGHybrid")], na.rm=T)                # Student Median
-sd(donate2013[describeEA == "Yes"], na.rm=T)                    # SD
-quantile(donate2013[describeEA == "Yes"], na.rm=T, probs=seq(0.1,1,len=10))  # Deciles
-quantile(donate2013[describeEA == "Yes"], na.rm=T, probs=seq(0.91,1,len=10))  # 0.9-1 Deciles 
-sum(donate2013[!is.na(donate2013) & describeEA == "Yes"])
-
-tapply()
-
-median(p_inc_donate[describeEA == "Yes"], na.rm=T)
-mean(p_inc_donate[describeEA == "Yes"], na.rm=T)
-median(p_inc_donate[student == "No" & describeEA == "Yes"], na.rm=T)
-sd(p_inc_donate[student == "No" & describeEA == "Yes"], na.rm=T)
-median(p_inc_donate[student == "No" & describeEA == "No"], na.rm=T)
-sd(p_inc_donate[p_inc_donate != "Inf" & p_inc_donate != "NaN" & describeEA == "Yes" & income_2013 >= 10000], na.rm=T)
-
-length(p_inc_donate[!is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
-length(p_inc_donate[p_inc_donate >= 1 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
-length(p_inc_donate[p_inc_donate >= 2 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
-length(p_inc_donate[p_inc_donate >= 3 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
-length(p_inc_donate[p_inc_donate >= 5 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
-length(p_inc_donate[p_inc_donate >= 10 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
-length(p_inc_donate[p_inc_donate >= 15 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
-length(p_inc_donate[p_inc_donate >= 20 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
-length(p_inc_donate[p_inc_donate >= 30 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
-length(p_inc_donate[p_inc_donate >= 40 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
-length(p_inc_donate[p_inc_donate >= 50 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
-length(p_inc_donate[p_inc_donate >= 60 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
-length(p_inc_donate[p_inc_donate >= 70 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
-length(p_inc_donate[p_inc_donate >= 80 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000])
-length(p_inc_donate[p_inc_donate >= 90 & !is.na(p_inc_donate) & describeEA == "Yes" & income_2013 >= 10000]) 
 
 # Correlations
 t.test(donate2013[factors_80K!="N/A"] ~ factors_80K[factors_80K!="N/A"])
