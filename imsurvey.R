@@ -15,14 +15,15 @@ swap_by_value <- function(swap_list, var_name) {
   })
   NULL
 }
-make_new_var <- function(new_var_name, defining_fn) {
+make_new_var <- function(new_var_name, definition) {
   imdata <<- rbind(imdata, data.frame(
     Response.ID = unique(imdata[[1]]),
     variable = new_var_name,
-    value = defining_fn()
+    value = definition
   ))
   NULL
 }
+fetch <- function(var_name) { imdata[imdata[[2]] == var_name, 3] }
 
 
 ### Read Data
@@ -113,15 +114,12 @@ new_diet_variable <- function(switch) {
   } else {
     variable = c('diet3')
   }
-  sub_defining_fn <- if (switch == 'meat-eating vs. non-meat-eating') {
+  sub_definition <- if (switch == 'meat-eating vs. non-meat-eating') {
       function(x) ifelse(x == 'Meat-eating', 0, 1)
     } else {
       function(x) ifelse(x == 'Vegetarian', 1, ifelse(x == 'Vegan', 1, 0))
     }
-  defining_fn <- function() {
-    sapply(imdata[imdata[[2]] == 'diet', 3], sub_defining_fn)
-  }
-  make_new_var(variable, defining_fn)
+  make_new_var(variable, sapply(imdata[imdata[[2]] == 'diet', 3], sub_definition))
 }
 new_diet_variable('meat-eating vs. non-meat-eating')
 new_diet_variable('vegetarian/vegan vs. non-')
@@ -337,15 +335,14 @@ swap_by_ids(group_transform, 'group')
 swap_by_ids(donate_transform, 'donate2013')
 swap_by_ids(income_transform, 'income2013')
 
-p_inc_donate_df <- data.frame(Response.ID = unique(imdata[[1]]), variable = c('p_inc_donate'), value =
+make_new_var('p_inc_donate',
   sapply(imdata[imdata[[2]] == 'income2013',1], function(x) {
     donated <- as.numeric(imdata[imdata[[1]] == x & imdata[[2]] == 'donate2013', 3][[1]])
     income <- as.numeric(imdata[imdata[[1]] == x & imdata[[2]] == 'income2013', 3][[1]])
-    if (is.na(income) || !income) return(NA)
+    if (is.na(income) || !income) return("")
     (donated / income) * 100
   })
 )
-imdata <- rbind(imdata, p_inc_donate_df)
 
 # Clean Referral URL
 imdata[imdata[[2]] == "referrer",3] <- sapply(strsplit(imdata[imdata[[2]] == "referrer",3], "\\?"), "[", 2)
@@ -364,8 +361,12 @@ swap_by_value(list(
 ), 'referrer')
 
 # In the Random Sample?
-in.sample = rep(FALSE, 768)
-in.sample[id == 1606 | id == 1572 | id == 144 | id == 245 | id == 374 | id == 1683 | id == 1612 | id == 1580 | id == 1640 | id == 189 | id == 1575 | id == 163 | id == 1564 | id == 1611 | id == 207 | id == 1577 | id == 1607 | id == 1568 | id == 1630 | id == 1658 | id == 1598 | id == 1561 | id == 1596 | id == 1614 | id == 1615 | id == 252 | id == 1592 | id == 1054 | id == 1570 | id == 1639 | id == 1338] <- TRUE 
+random_sample_ids = c(1606, 1572, 144, 245, 374, 1683, 1612, 1580, 1640, 189, 1575, 163, 1564, 1611, 207, 1577, 1607, 1568, 1630, 1658, 1598, 1561, 1596, 1614, 1615, 252, 1592, 1054, 1570, 1639, 1338) 
+make_new_var('in_random_fb_sample', 
+  sapply(unique(imdata[[1]]), function(id) {
+    if (id %in% random_sample_ids) TRUE else FALSE
+  })
+)
 
 
 ## Demographics
