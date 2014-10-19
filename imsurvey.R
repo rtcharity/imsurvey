@@ -23,7 +23,11 @@ make_new_var <- function(new_var_name, definition) {
   ))
   NULL
 }
-fetch <- function(var_name) { imdata[imdata[[2]] == var_name, 3] }
+fetch <- function(var_name, col = 3, select = NULL) {
+  output <- imdata[imdata[[2]] == var_name, col]
+  if (!is.null(select)) output <- output[output == select]
+  output
+}
 
 
 ### Read Data
@@ -119,7 +123,7 @@ new_diet_variable <- function(switch) {
     } else {
       function(x) ifelse(x == 'Vegetarian', 1, ifelse(x == 'Vegan', 1, 0))
     }
-  make_new_var(variable, sapply(imdata[imdata[[2]] == 'diet', 3], sub_definition))
+  make_new_var(variable, sapply(fetch('diet'), sub_definition))
 }
 new_diet_variable('meat-eating vs. non-meat-eating')
 new_diet_variable('vegetarian/vegan vs. non-')
