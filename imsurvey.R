@@ -2,77 +2,14 @@
 if (!require(reshape2)) install.packages('reshape2'); require(reshape2)
 if (!require(devtools)) install.packages('devtools'); require(devtools)
 if (!require(Ramd)) install_github('robertzk/Ramd'); require(Ramd)
-
-
-### Define Functions
-swap_by_ids <- function(swap_list, variable, data) {
-  sapply(names(swap_list), function(id) {
-    data[data[[1]] == id & data[[2]] == variable & !is.na(data[[1]]), 3] <<- swap_list[[id]]
-  })
-  data
-}
-swap_by_value <- function(swap_list, var_name, data) {
-  sapply(names(swap_list), function(x) {
-    data[data[[2]] == var_name & data[[3]] == x, 3] <<- swap_list[[x]]
-  })
-  data
-}
-make_new_var <- function(new_var_name, definition, data) {
-  data <- rbind(data, data.frame(
-    Response.ID = unique(data[[1]]),
-    variable = new_var_name,
-    value = definition
-  ))
-  data
-}
-fetch <- function(var_name, data, col = 3, by_id = 0, select = NULL, na.rm = TRUE) {
-  if (by_id != 0) data <- data[data[[1]] == by_id,]
-  if (!is.null(select)) data <- data[data[[3]] == select,]
-  if (!identical(col, 'all')) {
-    output <- data[data[[2]] == var_name, col]
-  } else {
-    output <- data[data[[2]] == var_name, ]
-    na.rm = FALSE
-  }
-  if (isTRUE(na.rm)) output <- output[!is.na(output) & output != "" & output != "NA" & output != "N/A"]
-  output
-}
-fetch_by <- function(first_var, by_var, data, select) {
-  ids <- fetch(by_var, select = select, data = data, col = 1)
-  data[data[[1]] %in% ids & data[[2]] == first_var, 3]
-}
-run_fn <- function(fetch_group, fn, ...) {
-  fn(as.numeric(fetch_group), na.rm = TRUE, ...)
-}
-breakdown <- function(var, data, seq) {
-  sapply(seq, function(x) {
-    y <- as.numeric(fetch(var, data = data))
-    print(paste(x, length(y[y > x]), collapse = ':'))
-  })
-  NULL
-}
-define_variables <- function(definition_list, data) {
-  data[[2]] <- Reduce(function(v,i) {
-    gsub(
-      fixed = TRUE,
-      definition_list[[i]],
-      names(definition_list)[i],
-      v
-    ) },
-    seq_along(definition_list),
-    data[[2]]
-  )
-  data
-}
+if (!require(surveytools)) install_github('peterhurford/surveytools'); require(surveytools)
 
 ### Read Data
 setwd('~/dev/imsurvey')
 imdata <- read.csv('imdata.csv')
 
-
 # Melt Dataframe
 imdata <- melt(imdata, id="Response.ID")
-
 
 # Clean up variable names
 imdata <- define_variables(list(
@@ -156,7 +93,7 @@ new_diet_variable <- function(switch) {
       function(x) ifelse(x == 'Vegetarian', 1, ifelse(x == 'Vegan', 1, 0))
     }
   imdata <<- make_new_var(variable, sapply(
-    fetch('diet', data = imdata, na.rm = FALSE),
+    fetch_var('diet', data = imdata, na.rm = FALSE),
     sub_definition
   ), data = imdata)
 }
@@ -416,58 +353,58 @@ imdata <- imdata[imdata[[1]] %in% imdata[imdata[[2]] == 'describeEA' & imdata[[3
 
 
 ## Demographics
-table(fetch('heardEA', data = imdata_with_non_eas))
-table(fetch('describeEA', data = imdata_with_non_eas))
+table(fetch_var('heardEA', data = imdata_with_non_eas))
+table(fetch_var('describeEA', data = imdata_with_non_eas))
 table(
-  fetch('heardEA', data = imdata_with_non_eas, na.rm = FALSE),
-  fetch('describeEA', data = imdata_with_non_eas, na.rm = FALSE)
+  fetch_var('heardEA', data = imdata_with_non_eas, na.rm = FALSE),
+  fetch_var('describeEA', data = imdata_with_non_eas, na.rm = FALSE)
 )
-table(fetch('gender', data = imdata))
+table(fetch_var('gender', data = imdata))
 
-run_fn(fetch('age', data = imdata), mean)
-run_fn(fetch('age', data = imdata), median)
-run_fn(fetch('age', data = imdata), sd)
+fn_on_df(fetch_var('age', data = imdata), mean)
+fn_on_df(fetch_var('age', data = imdata), median)
+fn_on_df(fetch_var('age', data = imdata), sd)
 
-sort(table(fetch('religion', data = imdata)))
-table(fetch(data = imdata, 'student'))
-sort(table(fetch('location', data = imdata)))
-sort(table(fetch('sublocation', data = imdata)))
-table(fetch('friendcount', data = imdata))
+sort(table(fetch_var('religion', data = imdata)))
+table(fetch_var(data = imdata, 'student'))
+sort(table(fetch_var('location', data = imdata)))
+sort(table(fetch_var('sublocation', data = imdata)))
+table(fetch_var('friendcount', data = imdata))
 
-sort(table(fetch('group', data = imdata)))
-sort(table(fetch('referrer', data = imdata)))
+sort(table(fetch_var('group', data = imdata)))
+sort(table(fetch_var('referrer', data = imdata)))
 
 factors = c('contact', '80K', 'TLYCS', 'LW', 'GWWC', 'givewell', 'friends', 'online', 'chapter')
-sapply(factors, function(x) table(fetch(pp("factors_#{x}"), data = imdata)))
+sapply(factors, function(x) table(fetch_var(pp("factors_#{x}"), data = imdata)))
 
-table(fetch('metaethics', data = imdata))
+table(fetch_var('metaethics', data = imdata))
 
-length(fetch('donate2013', data = imdata_with_non_eas))
-length(fetch('donate2013', data = imdata))
-length(fetch('donate2013', select = 0, data = imdata_with_non_eas))
-length(fetch('donate2013', select = 0, data = imdata))
+length(fetch_var('donate2013', data = imdata_with_non_eas))
+length(fetch_var('donate2013', data = imdata))
+length(fetch_var('donate2013', select = 0, data = imdata_with_non_eas))
+length(fetch_var('donate2013', select = 0, data = imdata))
 
-run_fn(fetch('donate2013', data = imdata), mean)
-run_fn(fetch('donate2013', data = imdata), median)
+fn_on_df(fetch_var('donate2013', data = imdata), mean)
+fn_on_df(fetch_var('donate2013', data = imdata), median)
 
-run_fn(fetch_by('donate2013', data = imdata, 'student', 'No'), median)
-run_fn(fetch_by('donate2013', data = imdata, 'student', 'Yes'), median)
+fn_on_df(fetch_var_by('donate2013', data = imdata, 'student', 'No'), median)
+fn_on_df(fetch_var_by('donate2013', data = imdata, 'student', 'Yes'), median)
 
-run_fn(
-  fetch('donate2013', data = imdata),
+fn_on_df(
+  fetch_var('donate2013', data = imdata),
   quantile,
   probs = seq(0.1, 1, len = 10)
 )
-run_fn(
-  fetch('donate2013', data = imdata),
+fn_on_df(
+  fetch_var('donate2013', data = imdata),
   quantile,
   probs = seq(0.91, 1, len = 10)
 )
-run_fn(fetch('donate2013', data = imdata), sum)
+fn_on_df(fetch_var('donate2013', data = imdata), sum)
 
-run_fn(fetch('p_inc_donate', data = imdata), mean)
-run_fn(fetch('p_inc_donate', data = imdata), median)
-run_fn(fetch_by('p_inc_donate', data = imdata, 'student', 'No'), median)
+fn_on_df(fetch_var('p_inc_donate', data = imdata), mean)
+fn_on_df(fetch_var('p_inc_donate', data = imdata), median)
+fn_on_df(fetch_var_by('p_inc_donate', data = imdata, 'student', 'No'), median)
 
 ids_of_10K_or_more <- imdata[
   imdata[[2]] == 'income2013' &
@@ -475,7 +412,7 @@ ids_of_10K_or_more <- imdata[
     !is.na(as.numeric(imdata[[3]])), 1
 ]
 imdata_of_10K_or_more <- imdata[imdata[[1]] %in% ids_of_10K_or_more,]
-length(fetch('p_inc_donate', data = imdata_of_10K_or_more, na.rm = TRUE))
+length(fetch_var('p_inc_donate', data = imdata_of_10K_or_more, na.rm = TRUE))
 breakdown(
   'p_inc_donate',
   data = imdata_of_10K_or_more,
