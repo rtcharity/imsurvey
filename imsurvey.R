@@ -7,8 +7,6 @@ if (!require(surveytools)) install_github('peterhurford/surveytools'); require(s
 ### Read Data
 setwd('~/dev/imsurvey')
 imdata <- read.csv('imdata.csv')
-
-# Melt Dataframe
 imdata <- melt(imdata, id="Response.ID")
 
 # Clean up variable names
@@ -78,15 +76,16 @@ imdata <- swap_by_value(list(
   'Other' = 'other',
   'No opinion, or not familiar with these terms' = 'other'
 ), 'metaethics', data = imdata)
-imdata[imdata[[1]] %in% c(17, 45, 122, 201, 217, 377, 425, 524, 571, 971, 974, 994, 1029, 1054, 1060, 1035, 1438, 1459, 1548, 1572, 1678, 1707) & imdata[[2]] == 'metaethics', 3] <- 'consequentialist'
+imdata <- swap_multiple_ids(
+  c(17, 45, 122, 201, 217, 377, 425, 524, 571, 971, 974, 994, 1029, 1054, 1060, 1035, 1438, 1459, 1548, 1572, 1678, 1707),
+  value = 'consequentialist',
+  variable = 'metaethics',
+  data = imdata
+)
 
 # Diet
 new_diet_variable <- function(switch) {
-  if (switch == 'meat-eating vs. non-meat-eating') {
-    variable = c('diet2')
-  } else {
-    variable = c('diet3')
-  }
+  variable <- if (switch == 'meat-eating vs. non-meat-eating') 'diet2' else 'diet3'
   sub_definition <- if (switch == 'meat-eating vs. non-meat-eating') {
       function(x) ifelse(x == 'Meat-eating', 0, 1)
     } else {
@@ -116,9 +115,9 @@ imdata <- swap_by_value(list(
 ), 'group', data = imdata) # Having ACE twice is because one has a space and one has a tab.
 
 # Factors
-imdata[imdata[[1]] %in% c(13, 31, 79, 110, 146, 367, 374, 383, 534, 577) & imdata[[2]] == 'factors_TLYCS', 3] <- 'Yes'
-imdata[imdata[[1]] %in% c(271) & imdata[[2]] == 'factors_givewell', 3] <- 'Yes'
-imdata[imdata[[1]] %in% c(361, 374, 606) & imdata[[2]] == 'factors_online', 3] <- 'Yes'
+imdata <- swap_multiple_ids(c(13, 31, 79, 110, 146, 367, 374, 383, 534, 577), 'Yes', 'factors_TLYCS', imdata)
+imdata <- swap_multiple_ids(c(271), 'Yes', 'factors_givewell', imdata)
+imdata <- swap_multiple_ids(c(361, 374, 606), 'Yes', 'factors_online', imdata)
 
 # Careers
 imdata <- swap_by_value(list(
@@ -313,9 +312,9 @@ imdata <- swap_by_ids(donate_transform, 'donate2013', data = imdata)
 imdata <- swap_by_ids(income_transform, 'income2013', data = imdata)
 
 imdata <- make_new_var('p_inc_donate',
-  sapply(imdata[imdata[[2]] == 'income2013',1], function(x) {
-    donated <- as.numeric(imdata[imdata[[1]] == x & imdata[[2]] == 'donate2013', 3][[1]])
-    income <- as.numeric(imdata[imdata[[1]] == x & imdata[[2]] == 'income2013', 3][[1]])
+  sapply(fetch_var('income2013', col = 1, data = imdata), function(id) {
+    donated <- as.numeric(fetch_var('donate2013', by_id = id, data = imdata))
+    income <- as.numeric(fetch_var('donate2013', by_id = id, data = imdata))
     if (is.na(income) || !income) return("")
     (donated / income) * 100
   }),
