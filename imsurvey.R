@@ -5,25 +5,25 @@ if (!require(Ramd)) install_github('robertzk/Ramd'); require(Ramd)
 
 
 ### Define Functions
-swap_by_ids <- function(swap_list, variable) {
+swap_by_ids <- function(swap_list, variable, data) {
   sapply(names(swap_list), function(id) {
-    imdata[imdata[[1]] == id & imdata[[2]] == variable & !is.na(imdata[[1]]), 3] <<- swap_list[[id]]
+    data[data[[1]] == id & data[[2]] == variable & !is.na(data[[1]]), 3] <<- swap_list[[id]]
   })
-  NULL
+  data
 }
-swap_by_value <- function(swap_list, var_name) {
+swap_by_value <- function(swap_list, var_name, data) {
   sapply(names(swap_list), function(x) {
-    imdata[imdata[[2]] == var_name & imdata[[3]] == x, 3] <<- swap_list[[x]]
+    data[data[[2]] == var_name & data[[3]] == x, 3] <<- swap_list[[x]]
   })
-  NULL
+  data
 }
-make_new_var <- function(new_var_name, definition) {
-  imdata <<- rbind(imdata, data.frame(
-    Response.ID = unique(imdata[[1]]),
+make_new_var <- function(new_var_name, definition, data) {
+  data <- rbind(data, data.frame(
+    Response.ID = unique(data[[1]]),
     variable = new_var_name,
     value = definition
   ))
-  NULL
+  data
 }
 fetch <- function(var_name, data, col = 3, by_id = 0, select = NULL, na.rm = TRUE) {
   if (by_id != 0) data <- data[data[[1]] == by_id,]
@@ -51,6 +51,19 @@ breakdown <- function(var, data, seq) {
   })
   NULL
 }
+define_variables <- function(definition_list, data) {
+  data[[2]] <- Reduce(function(v,i) {
+    gsub(
+      fixed = TRUE,
+      definition_list[[i]],
+      names(definition_list)[i],
+      v
+    ) },
+    seq_along(definition_list),
+    data[[2]]
+  )
+  data
+}
 
 ### Read Data
 setwd('~/dev/imsurvey')
@@ -62,7 +75,7 @@ imdata <- melt(imdata, id="Response.ID")
 
 
 # Clean up variable names
-repl <- list(
+imdata <- define_variables(list(
   'id' = 'Response.ID',
   'describeEA' = 'Could.you..however.loosely..be.described.as..an.EA..',
   'metaethics' = 'What.moral.philosophy.do.you.subscribe.to..if.any.',
@@ -115,23 +128,19 @@ repl <- list(
   'religion' = 'Your.religious.beliefs',
   'location' = 'In.which.country.do.you.live.',
   'sublocation' = 'In.which.city.do.you.live.'
-)
-imdata[[2]] <- Reduce(function(v,i)
-  gsub(fixed = TRUE, repl[[i]], names(repl)[i], v), seq_along(repl)
-  , imdata[[2]]
-)
+), data = imdata)
 
 # Remove extraneous variables
 imdata <- imdata[!grepl('other', imdata[[2]], ignore.case=TRUE),]
 
 # Clean Metaethics
-swap_by_value(list(
+imdata <- swap_by_value(list(
   'Consequentialist/utilitarian' = 'consequentialist',
   'Deontology' = 'deontology',
   'Virtue ethics' = 'virtue',
   'Other' = 'other',
   'No opinion, or not familiar with these terms' = 'other'
-), 'metaethics')
+), 'metaethics', data = imdata)
 imdata[imdata[[1]] %in% c(17, 45, 122, 201, 217, 377, 425, 524, 571, 971, 974, 994, 1029, 1054, 1060, 1035, 1438, 1459, 1548, 1572, 1678, 1707) & imdata[[2]] == 'metaethics', 3] <- 'consequentialist'
 
 # Diet
@@ -146,16 +155,16 @@ new_diet_variable <- function(switch) {
     } else {
       function(x) ifelse(x == 'Vegetarian', 1, ifelse(x == 'Vegan', 1, 0))
     }
-  make_new_var(variable, sapply(
+  imdata <<- make_new_var(variable, sapply(
     fetch('diet', data = imdata, na.rm = FALSE),
     sub_definition
-  ))
+  ), data = imdata)
 }
 new_diet_variable('meat-eating vs. non-meat-eating')
 new_diet_variable('vegetarian/vegan vs. non-')
 
 # Group
-swap_by_value(list(
+imdata <- swap_by_value(list(
   '80,000 Hours' = 'CEA',
   'Animal Charity Evaluators (formerly Effective Animal Activism)' = 'ACE',
   'Animal Charity Evaluators (formerly Effective Animal Activism)' = 'ACE',
@@ -167,7 +176,7 @@ swap_by_value(list(
   'Search engine' = 'Search',
   'TED Talk (Peter Singer)' = 'TED',
   'The Life You Can Save' = 'TLYCS'
-), 'group') # Having ACE twice is because one has a space and one has a tab.
+), 'group', data = imdata) # Having ACE twice is because one has a space and one has a tab.
 
 # Factors
 imdata[imdata[[1]] %in% c(13, 31, 79, 110, 146, 367, 374, 383, 534, 577) & imdata[[2]] == 'factors_TLYCS', 3] <- 'Yes'
@@ -175,13 +184,13 @@ imdata[imdata[[1]] %in% c(271) & imdata[[2]] == 'factors_givewell', 3] <- 'Yes'
 imdata[imdata[[1]] %in% c(361, 374, 606) & imdata[[2]] == 'factors_online', 3] <- 'Yes'
 
 # Careers
-swap_by_value(list(
+imdata <- swap_by_value(list(
   "Direct charity/non-profit work" = "Direct",
   "Earning to Give" = "ETG",
   "None" = "None",
   "Research" = "Research",
   "Other" = "None"
-), 'career')
+), 'career', data = imdata)
 
                                                          
 # Conversion/Interpolation for Groups, Careers, Income, Donations, and % Income Donated, Oh MY!
@@ -361,18 +370,19 @@ income_transform <- list(
   "1871" = "27000.00", "1872" = "18186.86", "1889" = "12000.00", "1894" = "0.00" 
 )
 
-swap_by_ids(career_transform, 'career')
-swap_by_ids(group_transform, 'group')
-swap_by_ids(donate_transform, 'donate2013')
-swap_by_ids(income_transform, 'income2013')
+imdata <- swap_by_ids(career_transform, 'career', data = imdata)
+imdata <- swap_by_ids(group_transform, 'group', data = imdata)
+imdata <- swap_by_ids(donate_transform, 'donate2013', data = imdata)
+imdata <- swap_by_ids(income_transform, 'income2013', data = imdata)
 
-make_new_var('p_inc_donate',
+imdata <- make_new_var('p_inc_donate',
   sapply(imdata[imdata[[2]] == 'income2013',1], function(x) {
     donated <- as.numeric(imdata[imdata[[1]] == x & imdata[[2]] == 'donate2013', 3][[1]])
     income <- as.numeric(imdata[imdata[[1]] == x & imdata[[2]] == 'income2013', 3][[1]])
     if (is.na(income) || !income) return("")
     (donated / income) * 100
-  })
+  }),
+  data = imdata
 )
 
 # Clean Referral URL
@@ -380,7 +390,7 @@ imdata[imdata[[2]] == "referrer",3] <- sapply(strsplit(imdata[imdata[[2]] == "re
 imdata[imdata[[2]] == "referrer" & is.na(imdata[[3]]),3] <- ""
 imdata[imdata[[2]] == "referrer" & nchar(imdata[[3]]) > 12,3] <- ""
 imdata[imdata[[2]] == 'referrer' & substring(imdata[[3]],1,1)=='t' & !is.na(imdata[[3]]), 3] <- 't'
-swap_by_value(list(
+imdata <- swap_by_value(list(
   's=9' = 'EAFB',
   's=14' = 'LW',
   's=18' = 'OtherFB',
@@ -389,14 +399,15 @@ swap_by_value(list(
   'eah-profiles' = 'EA Profiles',
   't' = 'Personal',
   'p' = 'Personal'
-), 'referrer')
+), 'referrer', data = imdata)
 
 # In the Random Sample?
 random_sample_ids = c(1606, 1572, 144, 245, 374, 1683, 1612, 1580, 1640, 189, 1575, 163, 1564, 1611, 207, 1577, 1607, 1568, 1630, 1658, 1598, 1561, 1596, 1614, 1615, 252, 1592, 1054, 1570, 1639, 1338) 
-make_new_var('in_random_fb_sample', 
+imdata <- make_new_var('in_random_fb_sample', 
   sapply(unique(imdata[[1]]), function(id) {
     if (id %in% random_sample_ids) TRUE else FALSE
-  })
+  }),
+  data = imdata
 )
 
 # Exclude NonEAs and no answers
