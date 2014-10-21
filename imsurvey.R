@@ -8,6 +8,7 @@ if (!require(surveytools)) install_github('peterhurford/surveytools'); require(s
 setwd('~/dev/imsurvey')
 imdata <- read.csv('imdata.csv')
 imdata <- melt(imdata, id="Response.ID")
+imdata <- imdata[!is.na(imdata[[1]]),]
 
 # Clean up variable names
 imdata <- define_variables(list(
@@ -312,20 +313,38 @@ imdata <- swap_by_ids(donate_transform, 'donate2013', data = imdata)
 imdata <- swap_by_ids(income_transform, 'income2013', data = imdata)
 
 imdata <- make_new_var('p_inc_donate',
-  sapply(fetch_var('income2013', col = 1, data = imdata), function(id) {
-    donated <- as.numeric(fetch_var('donate2013', by_id = id, data = imdata))
-    income <- as.numeric(fetch_var('donate2013', by_id = id, data = imdata))
-    if (is.na(income) || !income) return("")
+  sapply(unique(imdata[[1]]), function(id) {
+    income <- as.numeric(fetch_var(
+      'income2013',
+      by_id = id,
+      data = imdata,
+      na.rm = FALSE
+    ))
+    if (length(income) == 0) return("")
+    if (is.null(income)) return("")
+    if (is.na(income)) return("")
+    if (income == 0) return("")
+    donated <- as.numeric(fetch_var(
+      'donate2013',
+      by_id = id,
+      data = imdata,
+      na.rm = FALSE
+    ))
     (donated / income) * 100
   }),
   data = imdata
 )
 
 # Clean Referral URL
-imdata[imdata[[2]] == "referrer",3] <- sapply(strsplit(imdata[imdata[[2]] == "referrer",3], "\\?"), "[", 2)
+imdata[imdata[[2]] == "referrer",3] <-
+  sapply(strsplit(imdata[imdata[[2]] == "referrer",3], "\\?"), "[", 2)
 imdata[imdata[[2]] == "referrer" & is.na(imdata[[3]]),3] <- ""
 imdata[imdata[[2]] == "referrer" & nchar(imdata[[3]]) > 12,3] <- ""
-imdata[imdata[[2]] == 'referrer' & substring(imdata[[3]],1,1)=='t' & !is.na(imdata[[3]]), 3] <- 't'
+imdata[
+  imdata[[2]] == 'referrer' &
+  substring(imdata[[3]],1,1)=='t' &
+  !is.na(imdata[[3]]), 3
+] <- 't'
 imdata <- swap_by_value(list(
   's=9' = 'EAFB',
   's=14' = 'LW',
@@ -348,8 +367,8 @@ imdata <- make_new_var('in_random_fb_sample',
 
 # Exclude NonEAs and no answers
 imdata_with_non_eas <- imdata
-imdata <- imdata[imdata[[1]] %in% imdata[imdata[[2]] == 'describeEA' & imdata[[3]] == 'Yes', 1],]
-
+ea_ids <- fetch_var('describeEA', select = 'Yes', col = 1, data = imdata)
+imdata <- imdata[imdata[[1]] %in% ea_ids,]
 
 ## Demographics
 table(fetch_var('heardEA', data = imdata_with_non_eas))
@@ -411,7 +430,7 @@ ids_of_10K_or_more <- imdata[
     !is.na(as.numeric(imdata[[3]])), 1
 ]
 imdata_of_10K_or_more <- imdata[imdata[[1]] %in% ids_of_10K_or_more,]
-length(fetch_var('p_inc_donate', data = imdata_of_10K_or_more, na.rm = TRUE))
+length(fetch_var('p_inc_donate', data = imdata_of_10K_or_more))
 breakdown(
   'p_inc_donate',
   data = imdata_of_10K_or_more,
