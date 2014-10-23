@@ -205,9 +205,9 @@ donate_transform <- list(
   "1729" = "0", "1730" = "0", "1732" = "0", "1733" = "388.96", "1734" = "6500", "1735" = "20", "1737" = "150", "1739" = "1000", "1740" = "60", "1741" = "100",
   "1742" = "0", "1743" = "324.14", "1744" = "2000", "1749" = "1619.80", "1754" = "121.55", "1755" = "0", "1760" = "0", "1762" = "10000", "1767" = "0",
   "1769" = "500", "1770" = "16435.210", "1773" = "150", "1777" = "0", "1782" = "8323.64", "1783" = "6482.74", "1784" = "5000", "1786" = "100", "1787" = "300",
-  "1788" = "1417.50", "1793" = "810.86", "1801" = "1500", "1804" = "0", "1809" = "809.70", "1813" = "2582.85", "1814" = "7287.26", "1826" = "0",
+  "1788" = "1417.50", "1793" = "810.86", "1796" = "802.20", "1801" = "1500", "1804" = "0", "1809" = "809.70", "1813" = "2582.85", "1814" = "7287.26", "1826" = "0",
   "1831" = "1619.89", "1832" = "11336.11", "1836" = "0", "1837" = "1200", "1848" = "1619.89", "1853" = "92.98", "1862" = "647.96", "1864" = "2570",
-  "1869" = "1943.27", "1872" = "3500", "1889" = "650", "1894" = "1000"
+  "1869" = "1943.27", "1871" = "3500", "1889" = "650", "1894" = "1000"
 )
 
 income_transform <- list(
@@ -389,7 +389,7 @@ table(
   fetch_var('heardEA', data = imdata_with_non_eas, na.rm = FALSE),
   fetch_var('describeEA', data = imdata_with_non_eas, na.rm = FALSE)
 )
-percent_table(fetch_var_by('describeEA', 'heardEA', 'Yes', col = 'all', data = imdata_with_non_eas))
+percent_table(fetch_var_by('describeEA', list('heardEA' = 'Yes'), col = 'all', data = imdata_with_non_eas))
 table(fetch_var('gender', data = imdata))
 fetch_percent_table('gender', data = imdata)
 
@@ -423,8 +423,8 @@ length(fetch_var('donate2013', select = 0, data = imdata))
 fn_on_df(fetch_var('donate2013', data = imdata), mean)
 fn_on_df(fetch_var('donate2013', data = imdata), median)
 
-fn_on_df(fetch_var_by('donate2013', data = imdata, 'student', 'No'), median)
-fn_on_df(fetch_var_by('donate2013', data = imdata, 'student', 'Yes'), median)
+fn_on_df(fetch_var_by('donate2013', list('student' = 'No'), data = imdata), median)
+fn_on_df(fetch_var_by('donate2013', list('student' = 'Yes'), data = imdata), median)
 
 fn_on_df(
   fetch_var('donate2013', data = imdata),
@@ -440,7 +440,7 @@ fn_on_df(fetch_var('donate2013', data = imdata), sum)
 
 fn_on_df(fetch_var('p_inc_donate', data = imdata), mean)
 fn_on_df(fetch_var('p_inc_donate', data = imdata), median)
-fn_on_df(fetch_var_by('p_inc_donate', data = imdata, 'student', 'No'), median)
+fn_on_df(fetch_var_by('p_inc_donate', list('student' = 'No'), data = imdata), median)
 
 ids_of_10K_or_more <- imdata[
   imdata[[2]] == 'income2013' &
@@ -508,44 +508,17 @@ prop.table(table(
 
 table(fetch_var('career', data = imdata))
 
-# ===================
+fn_on_df(fetch_var_by('donate2013', list('career' = 'ETG', 'student' = 'No'), data = imdata), median)
+t.test(
+  as.numeric(fetch_var('donate2013', data = imdata)),
+  ifelse(fetch_var('career', data = imdata) == 'ETG', 0, 1)
+)
+t.test(donate2013[student == "No" & describeEA == "Yes"], is.ETG[student == "No" & describeEA == "Yes"])
 
-# table(career)
-# is.ETG <- rep(0,768)
-# is.ETG[is.na(career)] <- NA
-# is.ETG[career == "ETG"] <- 1
-# table(career[income_2013 >= 60000 & p_inc_donate >= 10])
-# table(career[income_2013 >= 100000 & p_inc_donate >= 10])
+length(fetch_var('is.ETG', select = TRUE, data = imdata))
+table(fetch_var_by('career', list('is.ETG' = TRUE), data = imdata))
+fn_on_df(fetch_var_by('donate2013', list('is.ETG' = TRUE), data = imdata), sum)
 
-# table(factors_contact)
-# table(factors_80K)
-# table(factors_TLYCS)
-# table(factors_LW)
-# table(factors_GWWC)
-# table(factors_givewell)
-# table(factors_friends)
-# table(factors_online)
-# table(factors_chapter)
+fn_on_df(fetch_var('age', data = imdata), min)
+fn_on_df(fetch_var('age', data = imdata), max)
 
-
-# table(referrer)
-
-
-# # Correlations
-# t.test(donate2013[factors_80K!="N/A"] ~ factors_80K[factors_80K!="N/A"])
-
-# dp = donate2013[!is.na(age) & age !=""]
-# cor.test(dp[!is.na(dp) & !is.na(numeric_ages)], numeric_ages[!is.na(dp) & !is.na(numeric_ages)])
-
-# summary(lm(p_inc_donate ~ group))
-# chisq.test(career, group)
-# chisq.test(career, factors_80K)
-# table(metaethics, diet3)
-# table(group, diet3)
-
-# aggregate(p_inc_donate ~ career, imdata, median)
-# summary(lm(donate2013 ~ career))
-# summary(lm(donate2013[student == "No" & describeEA == "Yes"] ~ career[student == "No" & describeEA == "Yes"]))
-# summary(lm(p_inc_donate ~ career))
-# t.test(donate2013[student == "No" & describeEA == "Yes"], is.ETG[student == "No" & describeEA == "Yes"])
-# t.test(p_inc_donate[student == "No" & describeEA == "Yes"], is.ETG[student == "No" & describeEA == "Yes"])
