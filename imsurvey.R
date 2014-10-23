@@ -20,7 +20,7 @@ imdata <- define_variables(list(
   'animals' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Animal.welfare.',
   'rationality' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Improving.rationality.or.science.',
   'politics' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Political.reform.',
-  'ai' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Existential.risk..artificial.intelligence.',
+  'ai' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Existential.risk..artificial.intelligence..',
   'xrisk' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Existential.risk..other..',
   'farfuture' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Far.future.concerns..besides.existential.risk..',
   'prioritization' = 'Which.of.the.following.causes.do.you.think.you.should.devote.resources.to...Cause.prioritization.',
@@ -65,9 +65,6 @@ imdata <- define_variables(list(
   'location' = 'In.which.country.do.you.live.',
   'sublocation' = 'In.which.city.do.you.live.'
 ), data = imdata)
-
-# Remove extraneous variables
-imdata <- imdata[!grepl('other', imdata[[2]], ignore.case=TRUE),]
 
 # Clean Metaethics
 imdata <- swap_by_value(list(
@@ -124,7 +121,7 @@ imdata <- swap_multiple_ids(c(361, 374, 606), 'Yes', 'factors_online', imdata)
 imdata <- swap_by_value(list(
   "Direct charity/non-profit work" = "Direct",
   "Earning to Give" = "ETG",
-  "None" = "None",
+  "None of these" = "None",
   "Research" = "Research",
   "Other" = "None"
 ), 'career', data = imdata)
@@ -335,6 +332,21 @@ imdata <- make_new_var('p_inc_donate',
   data = imdata
 )
 
+imdata <- make_new_var('is.ETG',
+   sapply(unique(imdata[[1]]), function(id) {
+     if (!(id %in% fetch_var('career', col = 1, data = imdata))) return(FALSE)
+     if (!grepl("ETG", fetch_var('career', by_id = id, data = imdata))) return(FALSE)
+     if (!(id %in% fetch_var('income2013', col = 1, data = imdata))) return (FALSE)
+     if (!(id %in% fetch_var('p_inc_donate', col = 1, data = imdata))) return (FALSE)
+     if (as.numeric(fetch_var('income2013', by_id = id, data = imdata)) < 60000)
+       return(FALSE)
+     if (as.numeric(fetch_var('p_inc_donate', by_id = id, data = imdata)) < .1)
+       return(FALSE)
+     TRUE
+    }),
+   data = imdata
+)
+
 # Clean Referral URL
 imdata[imdata[[2]] == "referrer",3] <-
   sapply(strsplit(imdata[imdata[[2]] == "referrer",3], "\\?"), "[", 2)
@@ -377,15 +389,20 @@ table(
   fetch_var('heardEA', data = imdata_with_non_eas, na.rm = FALSE),
   fetch_var('describeEA', data = imdata_with_non_eas, na.rm = FALSE)
 )
+percent_table(fetch_var_by('describeEA', 'heardEA', 'Yes', col = 'all', data = imdata_with_non_eas))
 table(fetch_var('gender', data = imdata))
+fetch_percent_table('gender', data = imdata)
 
 fn_on_df(fetch_var('age', data = imdata), mean)
 fn_on_df(fetch_var('age', data = imdata), median)
 fn_on_df(fetch_var('age', data = imdata), sd)
 
 sort(table(fetch_var('religion', data = imdata)))
-table(fetch_var(data = imdata, 'student'))
+fetch_percent_table('religion', data = imdata)
+table(fetch_var('student', data = imdata))
+fetch_percent_table('student', data = imdata)
 sort(table(fetch_var('location', data = imdata)))
+fetch_percent_table('location', data = imdata, round = 2)
 sort(table(fetch_var('sublocation', data = imdata)))
 table(fetch_var('friendcount', data = imdata))
 
@@ -396,6 +413,7 @@ factors = c('contact', '80K', 'TLYCS', 'LW', 'GWWC', 'givewell', 'friends', 'onl
 sapply(factors, function(x) table(fetch_var(pp("factors_#{x}"), data = imdata)))
 
 table(fetch_var('metaethics', data = imdata))
+fetch_percent_table('metaethics', data = imdata)
 
 length(fetch_var('donate2013', data = imdata_with_non_eas))
 length(fetch_var('donate2013', data = imdata))
@@ -437,97 +455,97 @@ breakdown(
   seq = c(seq(1,3), 5, seq(10,20,by=5), seq(30,90,by=10)) 
 )
 
-#===================
+table(fetch_var('donate80K', data = imdata))
+table(fetch_var('donateAMF', data = imdata))
+table(fetch_var('donateACE', data = imdata))
+table(fetch_var('donateCEA', data = imdata))
+table(fetch_var('donateCFAR', data = imdata))
+table(fetch_var('donateDTW', data = imdata))
+table(fetch_var('donateGD', data = imdata))
+table(fetch_var('donateGW', data = imdata))
+table(fetch_var('donateGWWC', data = imdata))
+table(fetch_var('donateTHL', data = imdata))
+table(fetch_var('donateLeverage', data = imdata))
+table(fetch_var('donateMIRI', data = imdata))
+table(fetch_var('donatePHC', data = imdata))
+table(fetch_var('donateSCI', data = imdata))
+table(fetch_var('donateVO', data = imdata))
 
-table(diet)
-table(diet2)
-table(diet, animals)
+table(fetch_var('poverty', data = imdata))
+table(fetch_var('environmentalism', data = imdata))
+table(fetch_var('animals', data = imdata))
+table(fetch_var('rationality', data = imdata))
+table(fetch_var('politics', data = imdata))
+table(fetch_var('ai', data = imdata))
+table(fetch_var('xrisk', data = imdata))
+table(fetch_var('farfuture', data = imdata))
+table(fetch_var('prioritization', data = imdata))
+table(fetch_var('metacharity', data = imdata))
+length(fetch_var('causeother', data = imdata))
 
-## Descriptive Statistics
-table(metaethics)
+table(
+  fetch_var('metacharity', data = imdata),
+  fetch_var('rationality', data = imdata)
+)
+table(
+  fetch_var('metacharity', data = imdata),
+  fetch_var('rationality', data = imdata),
+  fetch_var('prioritization', data = imdata)
+)
+table(
+  fetch_var('ai', data = imdata),
+  fetch_var('xrisk', data = imdata),
+  fetch_var('farfuture', data = imdata)
+)
 
-table(poverty)
-table(environmentalism)
-table(animals)
-table(rationality)
-table(politics)
-table(ai)
-table(xrisk)
-table(farfuture)
-table(prioritization)
-table(metacharity)
-table(causeother)
+table(fetch_var('diet', data = imdata))
+fetch_percent_table('diet', data = imdata)
 
-table(poverty[describeEA == "Yes"])
-table(environmentalism[describeEA == "Yes"])
-table(animals[describeEA == "Yes"])
-table(rationality[describeEA == "Yes"])
-table(politics[describeEA == "Yes"])
-table(ai[describeEA == "Yes"])
-table(xrisk[describeEA == "Yes"])
-table(farfuture[describeEA == "Yes"])
-table(prioritization[describeEA == "Yes"])
-table(metacharity[describeEA == "Yes"])
-table(causeother[describeEA == "Yes"])
+prop.table(table(
+  fetch_var('diet', data = imdata, na.rm = FALSE),
+  fetch_var('animals', data = imdata, na.rm = FALSE)
+),1)
 
-table(diet)
-table(diet2)
+table(fetch_var('career', data = imdata))
 
-sort(table(group))
-table(friendcount)
-table(student)
+# ===================
 
-table(career)
-is.ETG <- rep(0,768)
-is.ETG[is.na(career)] <- NA
-is.ETG[career == "ETG"] <- 1
-table(career[income_2013 >= 60000 & p_inc_donate >= 10])
-table(career[income_2013 >= 100000 & p_inc_donate >= 10])
+# table(career)
+# is.ETG <- rep(0,768)
+# is.ETG[is.na(career)] <- NA
+# is.ETG[career == "ETG"] <- 1
+# table(career[income_2013 >= 60000 & p_inc_donate >= 10])
+# table(career[income_2013 >= 100000 & p_inc_donate >= 10])
 
-table(factors_contact)
-table(factors_80K)
-table(factors_TLYCS)
-table(factors_LW)
-table(factors_GWWC)
-table(factors_givewell)
-table(factors_friends)
-table(factors_online)
-table(factors_chapter)
-
-table(donate80K)
-table(donateAMF)
-table(donateACE)
-table(donateCEA)
-table(donateCFAR)
-table(donateDTW)
-table(donateGD)
-table(donateGW)
-table(donateGWWC)
-table(donateTHL)
-table(donateLeverage)
-table(donateMIRI)
-table(donatePHC)
-table(donateSCI)
-table(donateVO)
-
-table(referrer)
+# table(factors_contact)
+# table(factors_80K)
+# table(factors_TLYCS)
+# table(factors_LW)
+# table(factors_GWWC)
+# table(factors_givewell)
+# table(factors_friends)
+# table(factors_online)
+# table(factors_chapter)
 
 
-# Correlations
-t.test(donate2013[factors_80K!="N/A"] ~ factors_80K[factors_80K!="N/A"])
+# table(referrer)
 
-dp = donate2013[!is.na(age) & age !=""]
-cor.test(dp[!is.na(dp) & !is.na(numeric_ages)], numeric_ages[!is.na(dp) & !is.na(numeric_ages)])
 
-summary(lm(p_inc_donate ~ group))
-chisq.test(career, group)
-chisq.test(career, factors_80K)
-table(metaethics, diet3)
-table(group, diet3)
+# # Correlations
+# t.test(donate2013[factors_80K!="N/A"] ~ factors_80K[factors_80K!="N/A"])
 
-aggregate(p_inc_donate ~ career, imdata, median)
-summary(lm(donate2013 ~ career))
-summary(lm(donate2013[student == "No" & describeEA == "Yes"] ~ career[student == "No" & describeEA == "Yes"]))
-summary(lm(p_inc_donate ~ career))
-t.test(donate2013[student == "No" & describeEA == "Yes"], is.ETG[student == "No" & describeEA == "Yes"])
-t.test(p_inc_donate[student == "No" & describeEA == "Yes"], is.ETG[student == "No" & describeEA == "Yes"])
+# dp = donate2013[!is.na(age) & age !=""]
+# cor.test(dp[!is.na(dp) & !is.na(numeric_ages)], numeric_ages[!is.na(dp) & !is.na(numeric_ages)])
+
+# summary(lm(p_inc_donate ~ group))
+# chisq.test(career, group)
+# chisq.test(career, factors_80K)
+# table(metaethics, diet3)
+# table(group, diet3)
+
+# aggregate(p_inc_donate ~ career, imdata, median)
+# summary(lm(donate2013 ~ career))
+# summary(lm(donate2013[student == "No" & describeEA == "Yes"] ~ career[student == "No" & describeEA == "Yes"]))
+# summary(lm(p_inc_donate ~ career))
+# t.test(donate2013[student == "No" & describeEA == "Yes"], is.ETG[student == "No" & describeEA == "Yes"])
+# t.test(p_inc_donate[student == "No" & describeEA == "Yes"], is.ETG[student == "No" & describeEA == "Yes"])
