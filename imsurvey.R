@@ -513,7 +513,6 @@ t.test(
   as.numeric(fetch_var('donate2013', data = imdata)),
   ifelse(fetch_var('career', data = imdata) == 'ETG', 0, 1)
 )
-t.test(donate2013[student == "No" & describeEA == "Yes"], is.ETG[student == "No" & describeEA == "Yes"])
 
 length(fetch_var('is.ETG', select = TRUE, data = imdata))
 table(fetch_var_by('career', list('is.ETG' = TRUE), data = imdata))
