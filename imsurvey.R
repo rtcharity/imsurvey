@@ -1,4 +1,4 @@
-### Libraries
+ Libraries
 if (!require(reshape2)) install.packages('reshape2'); require(reshape2)
 if (!require(devtools)) install.packages('devtools'); require(devtools)
 if (!require(Ramd)) install_github('robertzk/Ramd'); require(Ramd)
@@ -500,6 +500,7 @@ table(
 
 table(fetch_var('diet', data = imdata))
 fetch_percent_table('diet', data = imdata)
+fetch_percent_table('diet3', data = imdata)
 
 prop.table(table(
   fetch_var('diet', data = imdata, na.rm = FALSE),
@@ -527,3 +528,97 @@ length(fetch_var_in_range('donate2013', 10000, 49999, data = imdata))
 length(fetch_var_in_range('donate2013', 5000, 9999, data = imdata))
 length(fetch_var_in_range('donate2013', 1000, 4999, data = imdata))
 length(fetch_var_in_range('donate2013', 1, 999, data = imdata))
+
+# LessWrong comparison
+fn_on_df(fetch_var_by('age', list('referrer' = 'LW'), data = imdata), mean)
+fn_on_df(fetch_var_by('age', list('referrer' = 'LW'), data = imdata), sd)
+table(fetch_var_by('gender', list('referrer' = 'LW'), data = imdata))
+table(fetch_var_by('metaethics', list('referrer' = 'LW'), data = imdata))
+table(fetch_var_by('religion', list('referrer' = 'LW'), data = imdata))
+table(fetch_var_by('diet3', list('referrer' = 'LW'), data = imdata))
+table(fetch_var_by('poverty', list('referrer' = 'LW'), data = imdata))
+table(fetch_var_by('xrisk', list('referrer' = 'LW'), data = imdata))
+table(fetch_var_by('student', list('referrer' = 'LW'), data = imdata))
+fn_on_df(fetch_var_by('income2013',
+  list('referrer' = 'LW', 'student' = 'No'),
+  data = imdata),
+median)
+fn_on_df(fetch_var_by('donate2013',
+  list('referrer' = 'LW', 'student' = 'No'),
+  data = imdata),
+median)
+fn_on_df(fetch_var_by('income2013', list('student' = 'No'), data = imdata), median)
+fn_on_df(fetch_var_by('donate2013', list('student' = 'No'), data = imdata), median)
+
+# EA FB Comparison
+fn_on_df(fetch_var_by('age', list('referrer' = 'EAFB'), data = imdata), mean)
+fn_on_df(fetch_var_by('age', list('referrer' = 'EAFB'), data = imdata), sd)
+table(fetch_var_by('gender', list('referrer' = 'EAFB'), data = imdata))
+table(fetch_var_by('metaethics', list('referrer' = 'EAFB'), data = imdata))
+table(fetch_var_by('religion', list('referrer' = 'EAFB'), data = imdata))
+table(fetch_var_by('diet3', list('referrer' = 'EAFB'), data = imdata))
+table(fetch_var_by('poverty', list('referrer' = 'EAFB'), data = imdata))
+table(fetch_var_by('xrisk', list('referrer' = 'EAFB'), data = imdata))
+table(fetch_var_by('student', list('referrer' = 'EAFB'), data = imdata))
+fn_on_df(fetch_var_by('income2013',
+  list('referrer' = 'EAFB', 'student' = 'No'),
+  data = imdata),
+median)
+fn_on_df(fetch_var_by('donate2013',
+  list('referrer' = 'EAFB', 'student' = 'No'),
+  data = imdata),
+median)
+
+# Personal Comparison
+fn_on_df(fetch_var_by('age', list('referrer' = 'Personal'), data = imdata), mean)
+fn_on_df(fetch_var_by('age', list('referrer' = 'Personal'), data = imdata), sd)
+table(fetch_var_by('gender', list('referrer' = 'Personal'), data = imdata))
+table(fetch_var_by('metaethics', list('referrer' = 'Personal'), data = imdata))
+table(fetch_var_by('religion', list('referrer' = 'Personal'), data = imdata))
+table(fetch_var_by('diet3', list('referrer' = 'Personal'), data = imdata))
+table(fetch_var_by('poverty', list('referrer' = 'Personal'), data = imdata))
+table(fetch_var_by('xrisk', list('referrer' = 'Personal'), data = imdata))
+table(fetch_var_by('student', list('referrer' = 'Personal'), data = imdata))
+fn_on_df(fetch_var_by('income2013',
+  list('referrer' = 'Personal', 'student' = 'No'),
+  data = imdata),
+median)
+fn_on_df(fetch_var_by('donate2013',
+  list('referrer' = 'Personal', 'student' = 'No'),
+  data = imdata),
+median)
+
+y <- fetch_var('age', data = imdata, col = 'all')
+y[[3]] <- as.numeric(y[[3]])
+y <- na.rm(y)
+x <- fetch_var("referrer", data = imdata, col = 'all')
+x[x[[3]] %in% c('OtherFB', 'Special'), 3] <- NA
+x <- na.rm(x)
+x2 <- x[x[[1]] %in% y[[1]], 3]
+y2 <- y[y[[1]] %in% x[[1]], 3]
+z2 <- ifelse(x2 == "LW", TRUE, FALSE)
+z3 <- ifelse(x2 == "EAFB", TRUE, FALSE)
+t.test(y2 ~ z2)
+t.test(y2 ~ z3)
+summary(lm(y2 ~ x2))
+
+y <- fetch_var('gender', data = imdata, col = 'all')
+x <- fetch_var("referrer", data = imdata, col = 'all')
+y[y[[3]] == 'Other', 3] <- NA
+x[x[[3]] %in% c('OtherFB', 'Special'), 3] <- NA
+y <- na.rm(y)
+x <- na.rm(x)
+y2 <- y[y[[1]] %in% x[[1]], 3]
+x2 <- x[x[[1]] %in% y[[1]], 3]
+y3 <- ifelse(y2 == "Male", 0, 1)
+z2 <- ifelse(x2 == "LW", TRUE, FALSE)
+z3 <- ifelse(x2 == "EAFB", TRUE, FALSE)
+table(y2, x2)
+t.test(y3 ~ z2)
+t.test(y3 ~ z3)
+chisq.test(table(y2, x2))
+
+na.rm <- function(data) {
+  data[!is.na(data[[3]]) & data[[3]] != "" & data[[3]] != "NA" & data[[3]] != "N/A" & data[[3]] != "", ]  
+}
+
