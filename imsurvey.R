@@ -9,6 +9,7 @@ setwd('~/dev/imsurvey')
 imdata <- read.csv('imdata.csv')
 imdata <- melt(imdata, id="Response.ID")
 imdata <- imdata[!is.na(imdata[[1]]),]
+set_data(imdata)
 
 # Clean up variable names
 imdata <- define_variables(list(
@@ -64,7 +65,7 @@ imdata <- define_variables(list(
   'religion' = 'Your.religious.beliefs',
   'location' = 'In.which.country.do.you.live.',
   'sublocation' = 'In.which.city.do.you.live.'
-), data = imdata)
+))
 
 # Clean Metaethics
 imdata <- swap_by_value(list(
@@ -73,12 +74,11 @@ imdata <- swap_by_value(list(
   'Virtue ethics' = 'virtue',
   'Other' = 'other',
   'No opinion, or not familiar with these terms' = 'other'
-), 'metaethics', data = imdata)
+), 'metaethics')
 imdata <- swap_multiple_ids(
   c(17, 45, 122, 201, 217, 377, 425, 524, 571, 971, 974, 994, 1029, 1054, 1060, 1035, 1438, 1459, 1548, 1572, 1678, 1707),
   value = 'consequentialist',
-  variable = 'metaethics',
-  data = imdata
+  variable = 'metaethics'
 )
 
 # Diet
@@ -90,9 +90,9 @@ new_diet_variable <- function(switch) {
       function(x) ifelse(x == 'Vegetarian', 1, ifelse(x == 'Vegan', 1, 0))
     }
   imdata <<- make_new_var(variable, sapply(
-    fetch_var('diet', data = imdata, na.rm = FALSE),
+    fetch_var('diet', na.rm = FALSE),
     sub_definition
-  ), data = imdata)
+  ))
 }
 new_diet_variable('meat-eating vs. non-meat-eating')
 new_diet_variable('vegetarian/vegan vs. non-')
@@ -110,7 +110,7 @@ imdata <- swap_by_value(list(
   'Search engine' = 'Search',
   'TED Talk (Peter Singer)' = 'TED',
   'The Life You Can Save' = 'TLYCS'
-), 'group', data = imdata) # Having ACE twice is because one has a space and one has a tab.
+), 'group') # Having ACE twice is because one has a space and one has a tab.
 
 # Factors
 imdata <- swap_multiple_ids(c(13, 31, 79, 110, 146, 367, 374, 383, 534, 577), 'Yes', 'factors_TLYCS', imdata)
@@ -124,7 +124,7 @@ imdata <- swap_by_value(list(
   "None of these" = "None",
   "Research" = "Research",
   "Other" = "None"
-), 'career', data = imdata)
+), 'career')
 
                                                          
 # Conversion/Interpolation for Groups, Careers, Income, Donations, and % Income Donated, Oh MY!
@@ -304,17 +304,16 @@ income_transform <- list(
   "1871" = "27000.00", "1872" = "18186.86", "1889" = "12000.00", "1894" = "0.00" 
 )
 
-imdata <- swap_by_ids(career_transform, 'career', data = imdata)
-imdata <- swap_by_ids(group_transform, 'group', data = imdata)
-imdata <- swap_by_ids(donate_transform, 'donate2013', data = imdata)
-imdata <- swap_by_ids(income_transform, 'income2013', data = imdata)
+imdata <- swap_by_ids(career_transform, 'career')
+imdata <- swap_by_ids(group_transform, 'group')
+imdata <- swap_by_ids(donate_transform, 'donate2013')
+imdata <- swap_by_ids(income_transform, 'income2013')
 
 imdata <- make_new_var('p_inc_donate',
   sapply(unique(imdata[[1]]), function(id) {
     income <- as.numeric(fetch_var(
       'income2013',
       by_id = id,
-      data = imdata,
       na.rm = FALSE
     ))
     if (length(income) == 0) return("")
@@ -324,27 +323,24 @@ imdata <- make_new_var('p_inc_donate',
     donated <- as.numeric(fetch_var(
       'donate2013',
       by_id = id,
-      data = imdata,
       na.rm = FALSE
     ))
     (donated / income) * 100
-  }),
-  data = imdata
+  })
 )
 
 imdata <- make_new_var('is.ETG',
    sapply(unique(imdata[[1]]), function(id) {
-     if (!(id %in% fetch_var('career', col = 1, data = imdata))) return(FALSE)
-     if (!grepl("ETG", fetch_var('career', by_id = id, data = imdata))) return(FALSE)
-     if (!(id %in% fetch_var('income2013', col = 1, data = imdata))) return (FALSE)
-     if (!(id %in% fetch_var('p_inc_donate', col = 1, data = imdata))) return (FALSE)
-     if (as.numeric(fetch_var('income2013', by_id = id, data = imdata)) < 60000)
+     if (!(id %in% fetch_var('career', col = 1))) return(FALSE)
+     if (!grepl("ETG", fetch_var('career', by_id = id))) return(FALSE)
+     if (!(id %in% fetch_var('income2013', col = 1))) return (FALSE)
+     if (!(id %in% fetch_var('p_inc_donate', col = 1))) return (FALSE)
+     if (as.numeric(fetch_var('income2013', by_id = id)) < 60000)
        return(FALSE)
-     if (as.numeric(fetch_var('p_inc_donate', by_id = id, data = imdata)) < .1)
+     if (as.numeric(fetch_var('p_inc_donate', by_id = id)) < .1)
        return(FALSE)
      TRUE
-    }),
-   data = imdata
+    })
 )
 
 # Clean Referral URL
@@ -366,81 +362,75 @@ imdata <- swap_by_value(list(
   'eah-profiles' = 'EA Profiles',
   't' = 'Personal',
   'p' = 'Personal'
-), 'referrer', data = imdata)
+), 'referrer')
 
 # In the Random Sample?
 random_sample_ids = c(1606, 1572, 144, 245, 374, 1683, 1612, 1580, 1640, 189, 1575, 163, 1564, 1611, 207, 1577, 1607, 1568, 1630, 1658, 1598, 1561, 1596, 1614, 1615, 252, 1592, 1054, 1570, 1639, 1338) 
 imdata <- make_new_var('in_random_fb_sample', 
   sapply(unique(imdata[[1]]), function(id) {
     if (id %in% random_sample_ids) TRUE else FALSE
-  }),
-  data = imdata
+  })
 )
 
 # Exclude NonEAs and no answers
 imdata_with_non_eas <- imdata
-ea_ids <- fetch_var('describeEA', select = 'Yes', col = 1, data = imdata)
+ea_ids <- fetch_var('describeEA', select = 'Yes', col = 1)
 imdata <- imdata[imdata[[1]] %in% ea_ids,]
 
 ## Demographics
-table(fetch_var('heardEA', data = imdata_with_non_eas))
-table(fetch_var('describeEA', data = imdata_with_non_eas))
+set_data(imdata_with_non_eas)
+table(fetch_var('heardEA'))
+table(fetch_var('describeEA'))
 table(
-  fetch_var('heardEA', data = imdata_with_non_eas, na.rm = FALSE),
-  fetch_var('describeEA', data = imdata_with_non_eas, na.rm = FALSE)
+  fetch_var('heardEA', na.rm = FALSE),
+  fetch_var('describeEA', na.rm = FALSE)
 )
-percent_table(fetch_var_by('describeEA', list('heardEA' = 'Yes'), col = 'all', data = imdata_with_non_eas))
-table(fetch_var('gender', data = imdata))
-fetch_percent_table('gender', data = imdata)
+percent_table(fetch_var_by('describeEA', list('heardEA' = 'Yes'), col = 'all'))
 
-fn_on_df(fetch_var('age', data = imdata), mean)
-fn_on_df(fetch_var('age', data = imdata), median)
-fn_on_df(fetch_var('age', data = imdata), sd)
+set_data(imdata)
+table(fetch_var('gender'))
+fetch_percent_table('gender')
 
-sort(table(fetch_var('religion', data = imdata)))
-fetch_percent_table('religion', data = imdata)
-table(fetch_var('student', data = imdata))
-fetch_percent_table('student', data = imdata)
-sort(table(fetch_var('location', data = imdata)))
-fetch_percent_table('location', data = imdata, round = 2)
-sort(table(fetch_var('sublocation', data = imdata)))
-table(fetch_var('friendcount', data = imdata))
+fn_on_df(fetch_var('age'), mean)
+fn_on_df(fetch_var('age'), median)
+fn_on_df(fetch_var('age'), sd)
 
-sort(table(fetch_var('group', data = imdata)))
-sort(table(fetch_var('referrer', data = imdata)))
+sort(table(fetch_var('religion')))
+fetch_percent_table('religion')
+table(fetch_var('student'))
+fetch_percent_table('student')
+sort(table(fetch_var('location')))
+fetch_percent_table('location', round = 2)
+sort(table(fetch_var('sublocation')))
+table(fetch_var('friendcount'))
+
+sort(table(fetch_var('group')))
+sort(table(fetch_var('referrer')))
 
 factors = c('contact', '80K', 'TLYCS', 'LW', 'GWWC', 'givewell', 'friends', 'online', 'chapter')
-sapply(factors, function(x) table(fetch_var(pp("factors_#{x}"), data = imdata)))
+sapply(factors, function(x) table(fetch_var(pp("factors_#{x}"))))
 
-table(fetch_var('metaethics', data = imdata))
-fetch_percent_table('metaethics', data = imdata)
+table(fetch_var('metaethics'))
+fetch_percent_table('metaethics')
 
 length(fetch_var('donate2013', data = imdata_with_non_eas))
 length(fetch_var('donate2013', data = imdata))
 length(fetch_var('donate2013', select = 0, data = imdata_with_non_eas))
 length(fetch_var('donate2013', select = 0, data = imdata))
 
-fn_on_df(fetch_var('donate2013', data = imdata), mean)
-fn_on_df(fetch_var('donate2013', data = imdata), median)
+fn_on_df(fetch_var('donate2013'), mean)
+fn_on_df(fetch_var('donate2013'), median)
 
-fn_on_df(fetch_var_by('donate2013', list('student' = 'No'), data = imdata), median)
-fn_on_df(fetch_var_by('donate2013', list('student' = 'Yes'), data = imdata), median)
+fn_on_df(fetch_var_by('donate2013', list('student' = 'No')), median)
+fn_on_df(fetch_var_by('donate2013', list('student' = 'Yes')), median)
 
-fn_on_df(
-  fetch_var('donate2013', data = imdata),
-  quantile,
-  probs = seq(0.1, 1, len = 10)
-)
-fn_on_df(
-  fetch_var('donate2013', data = imdata),
-  quantile,
-  probs = seq(0.91, 1, len = 10)
-)
-fn_on_df(fetch_var('donate2013', data = imdata), sum)
+fn_on_df(fetch_var('donate2013'), quantile, probs = seq(0.1, 1, len = 10))
+fn_on_df(fetch_var('donate2013'), quantile, probs = seq(0.91, 1, len = 10))
+fn_on_df(fetch_var('donate2013'), sum)
 
-fn_on_df(fetch_var('p_inc_donate', data = imdata), mean)
-fn_on_df(fetch_var('p_inc_donate', data = imdata), median)
-fn_on_df(fetch_var_by('p_inc_donate', list('student' = 'No'), data = imdata), median)
+fn_on_df(fetch_var('p_inc_donate'), mean)
+fn_on_df(fetch_var('p_inc_donate'), median)
+fn_on_df(fetch_var_by('p_inc_donate', list('student' = 'No')), median)
 
 ids_of_10K_or_more <- imdata[
   imdata[[2]] == 'income2013' &
@@ -455,143 +445,137 @@ breakdown(
   seq = c(seq(1,3), 5, seq(10,20,by=5), seq(30,90,by=10)) 
 )
 
-table(fetch_var('donate80K', data = imdata))
-table(fetch_var('donateAMF', data = imdata))
-table(fetch_var('donateACE', data = imdata))
-table(fetch_var('donateCEA', data = imdata))
-table(fetch_var('donateCFAR', data = imdata))
-table(fetch_var('donateDTW', data = imdata))
-table(fetch_var('donateGD', data = imdata))
-table(fetch_var('donateGW', data = imdata))
-table(fetch_var('donateGWWC', data = imdata))
-table(fetch_var('donateTHL', data = imdata))
-table(fetch_var('donateLeverage', data = imdata))
-table(fetch_var('donateMIRI', data = imdata))
-table(fetch_var('donatePHC', data = imdata))
-table(fetch_var('donateSCI', data = imdata))
-table(fetch_var('donateVO', data = imdata))
+table(fetch_var('donate80K'))
+table(fetch_var('donateAMF'))
+table(fetch_var('donateACE'))
+table(fetch_var('donateCEA'))
+table(fetch_var('donateCFAR'))
+table(fetch_var('donateDTW'))
+table(fetch_var('donateGD'))
+table(fetch_var('donateGW'))
+table(fetch_var('donateGWWC'))
+table(fetch_var('donateTHL'))
+table(fetch_var('donateLeverage'))
+table(fetch_var('donateMIRI'))
+table(fetch_var('donatePHC'))
+table(fetch_var('donateSCI'))
+table(fetch_var('donateVO'))
 
-table(fetch_var('poverty', data = imdata))
-table(fetch_var('environmentalism', data = imdata))
-table(fetch_var('animals', data = imdata))
-table(fetch_var('rationality', data = imdata))
-table(fetch_var('politics', data = imdata))
-table(fetch_var('ai', data = imdata))
-table(fetch_var('xrisk', data = imdata))
-table(fetch_var('farfuture', data = imdata))
-table(fetch_var('prioritization', data = imdata))
-table(fetch_var('metacharity', data = imdata))
-length(fetch_var('causeother', data = imdata))
+table(fetch_var('poverty'))
+table(fetch_var('environmentalism'))
+table(fetch_var('animals'))
+table(fetch_var('rationality'))
+table(fetch_var('politics'))
+table(fetch_var('ai'))
+table(fetch_var('xrisk'))
+table(fetch_var('farfuture'))
+table(fetch_var('prioritization'))
+table(fetch_var('metacharity'))
+length(fetch_var('causeother'))
 
+table(fetch_var('metacharity'), fetch_var('rationality'))
 table(
-  fetch_var('metacharity', data = imdata),
-  fetch_var('rationality', data = imdata)
+  fetch_var('metacharity'),
+  fetch_var('rationality'),
+  fetch_var('prioritization')
 )
 table(
-  fetch_var('metacharity', data = imdata),
-  fetch_var('rationality', data = imdata),
-  fetch_var('prioritization', data = imdata)
-)
-table(
-  fetch_var('ai', data = imdata),
-  fetch_var('xrisk', data = imdata),
-  fetch_var('farfuture', data = imdata)
+  fetch_var('ai'),
+  fetch_var('xrisk'),
+  fetch_var('farfuture')
 )
 
-table(fetch_var('diet', data = imdata))
-fetch_percent_table('diet', data = imdata)
-fetch_percent_table('diet3', data = imdata)
+table(fetch_var('diet'))
+fetch_percent_table('diet')
+fetch_percent_table('diet3')
 
 prop.table(table(
-  fetch_var('diet', data = imdata, na.rm = FALSE),
-  fetch_var('animals', data = imdata, na.rm = FALSE)
+  fetch_var('diet', na.rm = FALSE),
+  fetch_var('animals', na.rm = FALSE)
 ),1)
 
-table(fetch_var('career', data = imdata))
+table(fetch_var('career'))
 
-fn_on_df(fetch_var_by('donate2013', list('career' = 'ETG', 'student' = 'No'), data = imdata), median)
+fn_on_df(fetch_var_by('donate2013',
+  list('career' = 'ETG', 'student' = 'No')),
+  median
+)
 t.test(
-  as.numeric(fetch_var('donate2013', data = imdata)),
-  ifelse(fetch_var('career', data = imdata) == 'ETG', 0, 1)
+  as.numeric(fetch_var('donate2013')),
+  ifelse(fetch_var('career') == 'ETG', 0, 1)
 )
 
-length(fetch_var('is.ETG', select = TRUE, data = imdata))
-table(fetch_var_by('career', list('is.ETG' = TRUE), data = imdata))
-fn_on_df(fetch_var_by('donate2013', list('is.ETG' = TRUE), data = imdata), sum)
+length(fetch_var('is.ETG', select = TRUE))
+table(fetch_var_by('career', list('is.ETG' = TRUE)))
+fn_on_df(fetch_var_by('donate2013', list('is.ETG' = TRUE)), sum)
 
-fn_on_df(fetch_var('age', data = imdata), min)
-fn_on_df(fetch_var('age', data = imdata), max)
+fn_on_df(fetch_var('age'), min)
+fn_on_df(fetch_var('age'), max)
 
-length(fetch_var('donate2013', '>=', 100000, data = imdata))
-length(fetch_var_in_range('donate2013', 50000, 99999, data = imdata))
-length(fetch_var_in_range('donate2013', 10000, 49999, data = imdata))
-length(fetch_var_in_range('donate2013', 5000, 9999, data = imdata))
-length(fetch_var_in_range('donate2013', 1000, 4999, data = imdata))
-length(fetch_var_in_range('donate2013', 1, 999, data = imdata))
+length(fetch_var('donate2013', '>=', 100000))
+length(fetch_var_in_range('donate2013', 50000, 99999))
+length(fetch_var_in_range('donate2013', 10000, 49999))
+length(fetch_var_in_range('donate2013', 5000, 9999))
+length(fetch_var_in_range('donate2013', 1000, 4999))
+length(fetch_var_in_range('donate2013', 1, 999))
 
 # LessWrong comparison
-fn_on_df(fetch_var_by('age', list('referrer' = 'LW'), data = imdata), mean)
-fn_on_df(fetch_var_by('age', list('referrer' = 'LW'), data = imdata), sd)
-table(fetch_var_by('gender', list('referrer' = 'LW'), data = imdata))
-table(fetch_var_by('metaethics', list('referrer' = 'LW'), data = imdata))
-table(fetch_var_by('religion', list('referrer' = 'LW'), data = imdata))
-table(fetch_var_by('diet3', list('referrer' = 'LW'), data = imdata))
-table(fetch_var_by('poverty', list('referrer' = 'LW'), data = imdata))
-table(fetch_var_by('xrisk', list('referrer' = 'LW'), data = imdata))
-table(fetch_var_by('student', list('referrer' = 'LW'), data = imdata))
+fn_on_df(fetch_var_by('age', list('referrer' = 'LW')), mean)
+fn_on_df(fetch_var_by('age', list('referrer' = 'LW')), sd)
+table(fetch_var_by('gender', list('referrer' = 'LW')))
+table(fetch_var_by('metaethics', list('referrer' = 'LW')))
+table(fetch_var_by('religion', list('referrer' = 'LW')))
+table(fetch_var_by('diet3', list('referrer' = 'LW')))
+table(fetch_var_by('poverty', list('referrer' = 'LW')))
+table(fetch_var_by('xrisk', list('referrer' = 'LW')))
+table(fetch_var_by('student', list('referrer' = 'LW')))
 fn_on_df(fetch_var_by('income2013',
   list('referrer' = 'LW', 'student' = 'No'),
-  data = imdata),
-median)
+), median)
 fn_on_df(fetch_var_by('donate2013',
   list('referrer' = 'LW', 'student' = 'No'),
-  data = imdata),
-median)
-fn_on_df(fetch_var_by('income2013', list('student' = 'No'), data = imdata), median)
-fn_on_df(fetch_var_by('donate2013', list('student' = 'No'), data = imdata), median)
+), median)
+fn_on_df(fetch_var_by('income2013', list('student' = 'No')), median)
+fn_on_df(fetch_var_by('donate2013', list('student' = 'No')), median)
 
 # EA FB Comparison
-fn_on_df(fetch_var_by('age', list('referrer' = 'EAFB'), data = imdata), mean)
-fn_on_df(fetch_var_by('age', list('referrer' = 'EAFB'), data = imdata), sd)
-table(fetch_var_by('gender', list('referrer' = 'EAFB'), data = imdata))
-table(fetch_var_by('metaethics', list('referrer' = 'EAFB'), data = imdata))
-table(fetch_var_by('religion', list('referrer' = 'EAFB'), data = imdata))
-table(fetch_var_by('diet3', list('referrer' = 'EAFB'), data = imdata))
-table(fetch_var_by('poverty', list('referrer' = 'EAFB'), data = imdata))
-table(fetch_var_by('xrisk', list('referrer' = 'EAFB'), data = imdata))
-table(fetch_var_by('student', list('referrer' = 'EAFB'), data = imdata))
+fn_on_df(fetch_var_by('age', list('referrer' = 'EAFB')), mean)
+fn_on_df(fetch_var_by('age', list('referrer' = 'EAFB')), sd)
+table(fetch_var_by('gender', list('referrer' = 'EAFB')))
+table(fetch_var_by('metaethics', list('referrer' = 'EAFB')))
+table(fetch_var_by('religion', list('referrer' = 'EAFB')))
+table(fetch_var_by('diet3', list('referrer' = 'EAFB')))
+table(fetch_var_by('poverty', list('referrer' = 'EAFB')))
+table(fetch_var_by('xrisk', list('referrer' = 'EAFB')))
+table(fetch_var_by('student', list('referrer' = 'EAFB')))
 fn_on_df(fetch_var_by('income2013',
   list('referrer' = 'EAFB', 'student' = 'No'),
-  data = imdata),
-median)
+), median)
 fn_on_df(fetch_var_by('donate2013',
   list('referrer' = 'EAFB', 'student' = 'No'),
-  data = imdata),
-median)
+), median)
 
 # Personal Comparison
-fn_on_df(fetch_var_by('age', list('referrer' = 'Personal'), data = imdata), mean)
-fn_on_df(fetch_var_by('age', list('referrer' = 'Personal'), data = imdata), sd)
-table(fetch_var_by('gender', list('referrer' = 'Personal'), data = imdata))
-table(fetch_var_by('metaethics', list('referrer' = 'Personal'), data = imdata))
-table(fetch_var_by('religion', list('referrer' = 'Personal'), data = imdata))
-table(fetch_var_by('diet3', list('referrer' = 'Personal'), data = imdata))
-table(fetch_var_by('poverty', list('referrer' = 'Personal'), data = imdata))
-table(fetch_var_by('xrisk', list('referrer' = 'Personal'), data = imdata))
-table(fetch_var_by('student', list('referrer' = 'Personal'), data = imdata))
+fn_on_df(fetch_var_by('age', list('referrer' = 'Personal')), mean)
+fn_on_df(fetch_var_by('age', list('referrer' = 'Personal')), sd)
+table(fetch_var_by('gender', list('referrer' = 'Personal')))
+table(fetch_var_by('metaethics', list('referrer' = 'Personal')))
+table(fetch_var_by('religion', list('referrer' = 'Personal')))
+table(fetch_var_by('diet3', list('referrer' = 'Personal')))
+table(fetch_var_by('poverty', list('referrer' = 'Personal')))
+table(fetch_var_by('xrisk', list('referrer' = 'Personal')))
+table(fetch_var_by('student', list('referrer' = 'Personal')))
 fn_on_df(fetch_var_by('income2013',
   list('referrer' = 'Personal', 'student' = 'No'),
-  data = imdata),
-median)
+), median)
 fn_on_df(fetch_var_by('donate2013',
   list('referrer' = 'Personal', 'student' = 'No'),
-  data = imdata),
-median)
+), median)
 
-y <- fetch_var('age', data = imdata, col = 'all')
+y <- fetch_var('age', col = 'all')
 y[[3]] <- as.numeric(y[[3]])
 y <- na.rm(y)
-x <- fetch_var("referrer", data = imdata, col = 'all')
+x <- fetch_var("referrer", col = 'all')
 x[x[[3]] %in% c('OtherFB', 'Special'), 3] <- NA
 x <- na.rm(x)
 x2 <- x[x[[1]] %in% y[[1]], 3]
@@ -602,8 +586,8 @@ t.test(y2 ~ z2)
 t.test(y2 ~ z3)
 summary(lm(y2 ~ x2))
 
-y <- fetch_var('gender', data = imdata, col = 'all')
-x <- fetch_var("referrer", data = imdata, col = 'all')
+y <- fetch_var('gender', col = 'all')
+x <- fetch_var("referrer", col = 'all')
 y[y[[3]] == 'Other', 3] <- NA
 x[x[[3]] %in% c('OtherFB', 'Special'), 3] <- NA
 y <- na.rm(y)
@@ -617,8 +601,3 @@ table(y2, x2)
 t.test(y3 ~ z2)
 t.test(y3 ~ z3)
 chisq.test(table(y2, x2))
-
-na.rm <- function(data) {
-  data[!is.na(data[[3]]) & data[[3]] != "" & data[[3]] != "NA" & data[[3]] != "N/A" & data[[3]] != "", ]  
-}
-
