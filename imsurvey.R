@@ -362,7 +362,7 @@ imdata <- swap_by_value(list(
   'eah-profiles' = 'EA Profiles',
   't' = 'Personal',
   'p' = 'Personal'
-), 'referrer')
+), 'referrer', data = imdata)
 
 # In the Random Sample?
 random_sample_ids = c(1606, 1572, 144, 245, 374, 1683, 1612, 1580, 1640, 189, 1575, 163, 1564, 1611, 207, 1577, 1607, 1568, 1630, 1658, 1598, 1561, 1596, 1614, 1615, 252, 1592, 1054, 1570, 1639, 1338) 
@@ -522,13 +522,13 @@ length(fetch_var_in_range('donate2013', 1, 999))
 # LessWrong comparison
 fn_on_df(fetch_var_by('age', list('referrer' = 'LW')), mean)
 fn_on_df(fetch_var_by('age', list('referrer' = 'LW')), sd)
-table(fetch_var_by('gender', list('referrer' = 'LW')))
-table(fetch_var_by('metaethics', list('referrer' = 'LW')))
-table(fetch_var_by('religion', list('referrer' = 'LW')))
-table(fetch_var_by('diet3', list('referrer' = 'LW')))
-table(fetch_var_by('poverty', list('referrer' = 'LW')))
-table(fetch_var_by('xrisk', list('referrer' = 'LW')))
-table(fetch_var_by('student', list('referrer' = 'LW')))
+percent_table(fetch_var_by('gender', list('referrer' = 'LW')))
+percent_table(fetch_var_by('metaethics', list('referrer' = 'LW')))
+percent_table(fetch_var_by('religion', list('referrer' = 'LW')))
+percent_table(fetch_var_by('diet3', list('referrer' = 'LW')))
+percent_table(fetch_var_by('poverty', list('referrer' = 'LW')))
+percent_table(fetch_var_by('xrisk', list('referrer' = 'LW')))
+percent_table(fetch_var_by('student', list('referrer' = 'LW')))
 fn_on_df(fetch_var_by('income2013',
   list('referrer' = 'LW', 'student' = 'No'),
 ), median)
@@ -541,13 +541,13 @@ fn_on_df(fetch_var_by('donate2013', list('student' = 'No')), median)
 # EA FB Comparison
 fn_on_df(fetch_var_by('age', list('referrer' = 'EAFB')), mean)
 fn_on_df(fetch_var_by('age', list('referrer' = 'EAFB')), sd)
-table(fetch_var_by('gender', list('referrer' = 'EAFB')))
-table(fetch_var_by('metaethics', list('referrer' = 'EAFB')))
-table(fetch_var_by('religion', list('referrer' = 'EAFB')))
-table(fetch_var_by('diet3', list('referrer' = 'EAFB')))
-table(fetch_var_by('poverty', list('referrer' = 'EAFB')))
-table(fetch_var_by('xrisk', list('referrer' = 'EAFB')))
-table(fetch_var_by('student', list('referrer' = 'EAFB')))
+percent_table(fetch_var_by('gender', list('referrer' = 'EAFB')))
+percent_table(fetch_var_by('metaethics', list('referrer' = 'EAFB')))
+percent_table(fetch_var_by('religion', list('referrer' = 'EAFB')))
+percent_table(fetch_var_by('diet3', list('referrer' = 'EAFB')))
+percent_table(fetch_var_by('poverty', list('referrer' = 'EAFB')))
+percent_table(fetch_var_by('xrisk', list('referrer' = 'EAFB')))
+percent_table(fetch_var_by('student', list('referrer' = 'EAFB')))
 fn_on_df(fetch_var_by('income2013',
   list('referrer' = 'EAFB', 'student' = 'No'),
 ), median)
@@ -558,13 +558,14 @@ fn_on_df(fetch_var_by('donate2013',
 # Personal Comparison
 fn_on_df(fetch_var_by('age', list('referrer' = 'Personal')), mean)
 fn_on_df(fetch_var_by('age', list('referrer' = 'Personal')), sd)
-table(fetch_var_by('gender', list('referrer' = 'Personal')))
-table(fetch_var_by('metaethics', list('referrer' = 'Personal')))
-table(fetch_var_by('religion', list('referrer' = 'Personal')))
-table(fetch_var_by('diet3', list('referrer' = 'Personal')))
-table(fetch_var_by('poverty', list('referrer' = 'Personal')))
-table(fetch_var_by('xrisk', list('referrer' = 'Personal')))
-table(fetch_var_by('student', list('referrer' = 'Personal')))
+percent_table(fetch_var_by('gender', list('referrer' = 'Personal')))
+percent_table(fetch_var_by('metaethics', list('referrer' = 'Personal')))
+percent_table(fetch_var_by('religion', list('referrer' = 'Personal')))
+percent_table(fetch_var_by('diet3', list('referrer' = 'Personal')))
+percent_table(fetch_var_by('poverty', list('referrer' = 'Personal')))
+percent_table(fetch_var_by('xrisk', list('referrer' = 'Personal')))
+percent_table(fetch_var_by('student', list('referrer' = 'Personal')))
+percent_table(fetch_var_by('student', list('referrer' = 'Personal')))
 fn_on_df(fetch_var_by('income2013',
   list('referrer' = 'Personal', 'student' = 'No'),
 ), median)
