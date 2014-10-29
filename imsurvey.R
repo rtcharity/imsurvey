@@ -340,17 +340,17 @@ imdata <- make_new_var('p_inc_donate',
 )
 
 imdata <- make_new_var('is.ETG',
-   pbsapply(unique(imdata[[1]]), function(id) {
-     if (!(id %in% fetch_var('career', col = 1))) return(FALSE)
-     if (!grepl("ETG", fetch_var('career', by_id = id))) return(FALSE)
-     if (!(id %in% fetch_var('income2013', col = 1))) return (FALSE)
-     if (!(id %in% fetch_var('p_inc_donate', col = 1))) return (FALSE)
-     if (as.numeric(fetch_var('income2013', by_id = id)) < 60000)
-       return(FALSE)
-     if (as.numeric(fetch_var('p_inc_donate', by_id = id)) < .1)
-       return(FALSE)
-     TRUE
-    })
+  pbsapply(unique(imdata[[1]]), function(id) {
+    if (!(id %in% fetch_var('career', col = 1))) return(FALSE)
+    if (!grepl("ETG", fetch_var('career', by_id = id))) return(FALSE)
+    if (!(id %in% fetch_var('income2013', col = 1))) return (FALSE)
+    if (!(id %in% fetch_var('p_inc_donate', col = 1))) return (FALSE)
+    if (as.numeric(fetch_var('income2013', by_id = id)) < 60000)
+      return(FALSE)
+    if (as.numeric(fetch_var('p_inc_donate', by_id = id)) < .1)
+      return(FALSE)
+    TRUE
+  })
 )
 
 # Clean Referral URL
