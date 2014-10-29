@@ -582,14 +582,33 @@ fn_on_df(fetch_var_by('income2013',
 fn_on_df(fetch_var_by('donate2013',
   list('referrer' = 'Personal', 'student' = 'No'),
 ), median)
+
+# Statistical Testing
 stattest('gender', 'referrer', 'chisquare',
-  ignore = list('Other', 'OtherFB', 'Special')
+  ignore = list('Other', 'OtherFB', 'Special', 'EA Profiles')
 )
 stattest('age', 'referrer', 'lm', ignore = list('OtherFB', 'Special'))
 stattest('metaethics', 'referrer', 'chisquare',
-  ignore = list('OtherFB', 'Special')
+  ignore = list('OtherFB', 'Special', 'EA Profiles')
 )
-stattest('religion', 'referrer', 'chisquare',
-  ignore = list('OtherFB', 'Special')
+stattest('atheist', 'referrer', 'chisquare',
+  ignore = list('OtherFB', 'Special', 'EA Profiles')
 )
-
+stattest('diet', 'referrer', 'chisquare',
+  ignore = list('OtherFB', 'Special', 'EA Profiles')
+)
+stattest('poverty', 'referrer', 'chisquare',
+  ignore = list('OtherFB', 'Special', 'EA Profiles')
+)
+stattest('xrisk', 'referrer', 'chisquare',
+  ignore = list('OtherFB', 'Special', 'EA Profiles')
+)
+stattest('student', 'referrer', 'chisquare',
+  ignore = list('OtherFB', 'Special', 'EA Profiles')
+)
+stattest('income2013', 'referrer', 'lm',
+  ignore = list('OtherFB', 'Special', 'EA Profiles')
+)
+stattest('donate2013', 'referrer', 'lm',
+  ignore = list('OtherFB', 'Special', 'EA Profiles')
+)
