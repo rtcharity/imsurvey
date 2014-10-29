@@ -85,9 +85,9 @@ imdata <- swap_multiple_ids(
 new_diet_variable <- function(switch) {
   variable <- if (switch == 'meat-eating vs. non-meat-eating') 'diet2' else 'diet3'
   sub_definition <- if (switch == 'meat-eating vs. non-meat-eating') {
-      function(x) ifelse(x == 'Meat-eating', 0, 1)
+      function(x) ifelse(x == 'Meat-eating', TRUE, FALSE)
     } else {
-      function(x) ifelse(x == 'Vegetarian', 1, ifelse(x == 'Vegan', 1, 0))
+      function(x) ifelse(x == 'Vegetarian', TRUE, ifelse(x == 'Vegan', TRUE, FALSE))
     }
   imdata <<- make_new_var(variable, sapply(
     fetch_var('diet', na.rm = FALSE),
@@ -96,6 +96,15 @@ new_diet_variable <- function(switch) {
 }
 new_diet_variable('meat-eating vs. non-meat-eating')
 new_diet_variable('vegetarian/vegan vs. non-')
+
+# Atheism
+imdata <- swap_by_value(list(
+  'Atheist, agnostic, or non-religious' = 'atheist'
+), 'religion')
+imdata <- make_new_var('atheist', sapply(
+  fetch_var('religion', na.rm = FALSE),
+  function(x) ifelse(x == 'atheist', TRUE, FALSE)
+))
 
 # Group
 imdata <- swap_by_value(list(
@@ -575,8 +584,11 @@ fn_on_df(fetch_var_by('donate2013',
 stattest('gender', 'referrer', 'chisquare',
   ignore = list('Other', 'OtherFB', 'Special')
 )
-stattest('age', 'referrer', 'ttest',
-  ignore = list('Personal', 'OtherFB', 'Special')
-)
 stattest('age', 'referrer', 'lm', ignore = list('OtherFB', 'Special'))
+stattest('metaethics', 'referrer', 'chisquare',
+  ignore = list('OtherFB', 'Special')
+)
+stattest('religion', 'referrer', 'chisquare',
+  ignore = list('OtherFB', 'Special')
+)
 
