@@ -100,7 +100,7 @@ new_diet_variable('vegetarian/vegan vs. non-')
 
 # Atheism
 imdata <- swap_by_value(list(
-  'Atheist, agnostic, or non-religious' = 'atheist'
+  'Atheist, agnostic or non-religious' = 'atheist'
 ), 'religion')
 imdata <- make_new_var('atheist', pbsapply(
   fetch_var('religion', na.rm = FALSE),
