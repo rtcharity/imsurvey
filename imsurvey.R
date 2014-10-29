@@ -1,8 +1,9 @@
 ### Libraries
 if (!require(reshape2)) install.packages('reshape2'); require(reshape2)
 if (!require(devtools)) install.packages('devtools'); require(devtools)
-if (!require(productivus)) install_github('robertzk/Ramd'); require(productivus)
 if (!require(surveytools)) install_github('peterhurford/surveytools'); require(surveytools)
+if (!require(productivus)) install_github('robertzk/Ramd'); require(productivus)
+if (!require(pbapply)) install.packages('pbapply'); require(pbapply)
 
 ### Read Data
 setwd('~/dev/imsurvey')
@@ -89,7 +90,7 @@ new_diet_variable <- function(switch) {
     } else {
       function(x) ifelse(x == 'Vegetarian', TRUE, ifelse(x == 'Vegan', TRUE, FALSE))
     }
-  imdata <<- make_new_var(variable, sapply(
+  imdata <<- make_new_var(variable, pbsapply(
     fetch_var('diet', na.rm = FALSE),
     sub_definition
   ))
@@ -101,7 +102,7 @@ new_diet_variable('vegetarian/vegan vs. non-')
 imdata <- swap_by_value(list(
   'Atheist, agnostic, or non-religious' = 'atheist'
 ), 'religion')
-imdata <- make_new_var('atheist', sapply(
+imdata <- make_new_var('atheist', pbsapply(
   fetch_var('religion', na.rm = FALSE),
   function(x) ifelse(x == 'atheist', TRUE, FALSE)
 ))
@@ -319,7 +320,7 @@ imdata <- swap_by_ids(donate_transform, 'donate2013')
 imdata <- swap_by_ids(income_transform, 'income2013')
 
 imdata <- make_new_var('p_inc_donate',
-  sapply(unique(imdata[[1]]), function(id) {
+  pbsapply(unique(imdata[[1]]), function(id) {
     income <- as.numeric(fetch_var(
       'income2013',
       by_id = id,
@@ -339,7 +340,7 @@ imdata <- make_new_var('p_inc_donate',
 )
 
 imdata <- make_new_var('is.ETG',
-   sapply(unique(imdata[[1]]), function(id) {
+   pbsapply(unique(imdata[[1]]), function(id) {
      if (!(id %in% fetch_var('career', col = 1))) return(FALSE)
      if (!grepl("ETG", fetch_var('career', by_id = id))) return(FALSE)
      if (!(id %in% fetch_var('income2013', col = 1))) return (FALSE)
@@ -354,7 +355,7 @@ imdata <- make_new_var('is.ETG',
 
 # Clean Referral URL
 imdata[imdata[[2]] == "referrer",3] <-
-  sapply(strsplit(imdata[imdata[[2]] == "referrer",3], "\\?"), "[", 2)
+  pbsapply(strsplit(imdata[imdata[[2]] == "referrer",3], "\\?"), "[", 2)
 imdata[imdata[[2]] == "referrer" & is.na(imdata[[3]]),3] <- ""
 imdata[imdata[[2]] == "referrer" & nchar(imdata[[3]]) > 12,3] <- ""
 imdata[
@@ -376,7 +377,7 @@ imdata <- swap_by_value(list(
 # In the Random Sample?
 random_sample_ids = c(1606, 1572, 144, 245, 374, 1683, 1612, 1580, 1640, 189, 1575, 163, 1564, 1611, 207, 1577, 1607, 1568, 1630, 1658, 1598, 1561, 1596, 1614, 1615, 252, 1592, 1054, 1570, 1639, 1338) 
 imdata <- make_new_var('in_random_fb_sample', 
-  sapply(unique(imdata[[1]]), function(id) {
+  pbsapply(unique(imdata[[1]]), function(id) {
     if (id %in% random_sample_ids) TRUE else FALSE
   })
 )
@@ -417,7 +418,7 @@ sort(table(fetch_var('group')))
 sort(table(fetch_var('referrer')))
 
 factors = c('contact', '80K', 'TLYCS', 'LW', 'GWWC', 'givewell', 'friends', 'online', 'chapter')
-sapply(factors, function(x) table(fetch_var(pp("factors_#{x}"))))
+pbsapply(factors, function(x) table(fetch_var(pp("factors_#{x}"))))
 
 table(fetch_var('metaethics'))
 fetch_percent_table('metaethics')
