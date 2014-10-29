@@ -572,33 +572,11 @@ fn_on_df(fetch_var_by('income2013',
 fn_on_df(fetch_var_by('donate2013',
   list('referrer' = 'Personal', 'student' = 'No'),
 ), median)
+stattest('gender', 'referrer', 'chisquare',
+  ignore = list('Other', 'OtherFB', 'Special')
+)
+stattest('age', 'referrer', 'ttest',
+  ignore = list('Personal', 'OtherFB', 'Special')
+)
+stattest('age', 'referrer', 'lm', ignore = list('OtherFB', 'Special'))
 
-y <- fetch_var('age', col = 'all')
-y[[3]] <- as.numeric(y[[3]])
-y <- na.rm(y)
-x <- fetch_var("referrer", col = 'all')
-x[x[[3]] %in% c('OtherFB', 'Special'), 3] <- NA
-x <- na.rm(x)
-x2 <- x[x[[1]] %in% y[[1]], 3]
-y2 <- y[y[[1]] %in% x[[1]], 3]
-z2 <- ifelse(x2 == "LW", TRUE, FALSE)
-z3 <- ifelse(x2 == "EAFB", TRUE, FALSE)
-t.test(y2 ~ z2)
-t.test(y2 ~ z3)
-summary(lm(y2 ~ x2))
-
-y <- fetch_var('gender', col = 'all')
-x <- fetch_var("referrer", col = 'all')
-y[y[[3]] == 'Other', 3] <- NA
-x[x[[3]] %in% c('OtherFB', 'Special'), 3] <- NA
-y <- na.rm(y)
-x <- na.rm(x)
-y2 <- y[y[[1]] %in% x[[1]], 3]
-x2 <- x[x[[1]] %in% y[[1]], 3]
-y3 <- ifelse(y2 == "Male", 0, 1)
-z2 <- ifelse(x2 == "LW", TRUE, FALSE)
-z3 <- ifelse(x2 == "EAFB", TRUE, FALSE)
-table(y2, x2)
-t.test(y3 ~ z2)
-t.test(y3 ~ z3)
-chisq.test(table(y2, x2))
