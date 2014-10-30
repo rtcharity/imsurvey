@@ -104,7 +104,8 @@ imdata <- swap_by_value(list(
 ), 'religion')
 imdata <- make_new_var('atheist', pbsapply(
   fetch_var('religion', na.rm = FALSE),
-  function(x) ifelse(x == 'atheist', TRUE, FALSE)
+  function(x)
+    if(is.na(x) | x == '') NA else ifelse(x == 'atheist', TRUE, FALSE)
 ))
 
 # Group
@@ -510,6 +511,10 @@ fn_on_df(fetch_var_by('donate2013',
   list('career' = 'ETG', 'student' = 'No')),
   median
 )
+fn_on_df(fetch_var_by('donate2013',
+  list('career' = 'ETG', 'student' = 'No')),
+  mean
+)
 t.test(
   as.numeric(fetch_var('donate2013')),
   ifelse(fetch_var('career') == 'ETG', 0, 1)
@@ -612,3 +617,39 @@ stattest('income2013', 'referrer', 'lm',
 stattest('donate2013', 'referrer', 'lm',
   ignore = list('OtherFB', 'Special', 'EA Profiles')
 )
+
+# EA Random Sample Comparison
+length(fetch_var_by('in_random_fb_sample',
+  list('in_random_fb_sample' = TRUE)
+))
+fn_on_df(fetch_var_by('age', list('in_random_fb_sample' = TRUE)), mean)
+fn_on_df(fetch_var_by('age', list('in_random_fb_sample' = TRUE)), sd)
+stattest('age', 'in_random_fb_sample', 'ttest')
+percent_table(fetch_var_by('gender', list('in_random_fb_sample' = TRUE)))
+stattest('gender', 'in_random_fb_sample', 'chisquare',
+  ignore = list('Other')
+)
+percent_table(fetch_var_by('metaethics', list('in_random_fb_sample' = TRUE)))
+stattest('metaethics', 'in_random_fb_sample', 'chisquare')
+percent_table(fetch_var_by('religion', list('in_random_fb_sample' = TRUE)))
+percent_table(fetch_var_by('religion', list('referrer' = 'EAFB')))
+stattest('atheist', 'in_random_fb_sample', 'chisquare')
+percent_table(fetch_var_by('diet3', list('in_random_fb_sample' = TRUE)))
+stattest('diet3', 'in_random_fb_sample', 'chisquare')
+rercent_table(fetch_var_by('poverty', list('in_random_fb_sample' = TRUE)))
+stattest('poverty', 'in_random_fb_sample', 'chisquare')
+percent_table(fetch_var_by('environmentalism', list('referrer' = 'EAFB')))
+percent_table(fetch_var_by('environmentalism', list('in_random_fb_sample' = TRUE)))
+stattest('environmentalism', 'in_random_fb_sample', 'chisquare')
+percent_table(fetch_var_by('xrisk', list('in_random_fb_sample' = TRUE)))
+stattest('xrisk', 'in_random_fb_sample', 'chisquare')
+percent_table(fetch_var_by('student', list('in_random_fb_sample' = TRUE)))
+stattest('student', 'in_random_fb_sample', 'chisquare')
+fn_on_df(fetch_var_by('income2013',
+  list('in_random_fb_sample' = TRUE, 'student' = 'No'),
+), median)
+stattest('income2013', 'in_random_fb_sample', 'ttest')
+fn_on_df(fetch_var_by('donate2013',
+  list('in_random_fb_sample' = TRUE, 'student' = 'No'),
+), median)
+stattest('donate2013', 'in_random_fb_sample', 'ttest')
