@@ -527,12 +527,30 @@ fn_on_df(fetch_var_by('donate2013', list('is.ETG' = TRUE)), sum)
 fn_on_df(fetch_var('age'), min)
 fn_on_df(fetch_var('age'), max)
 
+# GiveWell comparison
 length(fetch_var('donate2013', '>=', 100000))
 length(fetch_var_in_range('donate2013', 50000, 99999))
 length(fetch_var_in_range('donate2013', 10000, 49999))
 length(fetch_var_in_range('donate2013', 5000, 9999))
 length(fetch_var_in_range('donate2013', 1000, 4999))
 length(fetch_var_in_range('donate2013', 1, 999))
+
+ids_of_2K_or_more <- imdata[
+  imdata[[2]] == 'donate2013' &
+    as.numeric(imdata[[3]]) > 2000 &
+    !is.na(as.numeric(imdata[[3]])), 1
+]
+imdata_of_2K_or_more <- imdata[imdata[[1]] %in% ids_of_2K_or_more,]
+set_data(imdata_of_2K_or_more)
+length(fetch_var_in_range('age', 20, 29))
+length(fetch_var_in_range('age', 30, 39))
+length(fetch_var_in_range('age', 40, 49))
+length(fetch_var_in_range('age', 50, 59))
+length(fetch_var_in_range('age', 60, 69))
+length(fetch_var_in_range('age', 70, 79))
+table(fetch_var('group'))
+length(fetch_var('age', '>=', 80))
+set_data(imdata)
 
 # LessWrong comparison
 fn_on_df(fetch_var_by('age', list('referrer' = 'LW')), mean)
