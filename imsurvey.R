@@ -11,15 +11,15 @@ setwd('~/dev/imsurvey')
 # First Survey Respondants
 imdata1 <- read.csv('imdata.csv')
 imdata1 <- melt(imdata, id="Response.ID")
-imdata1 <- imdata[!is.na(imdata[[1]]),]
+imdata1 <- imdata[!is.na(ids(imdata)),]
 
 imdata2 <- read.csv('imdata-more-results.csv')
 imdata2 <- melt(imdata2, id="Response.ID")
-imdata2 <- imdata2[!is.na(imdata2[[2]]),]
+imdata2 <- imdata2[!is.na(variables(imdata2)),]
 
 imdata_ace <- read.csv('ace-results.csv')
 imdata_ace <- melt(imdata_ace, id="Response.ID")
-imdata_ace <- imdata_ace[!is.na(imdata_ace[[2]]),]
+imdata_ace <- imdata_ace[!is.na(variables(imdata_ace),]
 pbsapply(ids(imdata_ace), function(id) {
   imdata_ace[imdata_ace[[1]] == id, 1] <<- pp("A#{id}")
 })
@@ -336,7 +336,7 @@ imdata <- swap_by_ids(donate_transform, 'donate2013')
 imdata <- swap_by_ids(income_transform, 'income2013')
 
 imdata <- make_new_var('p_inc_donate',
-  pbsapply(unique(imdata[[1]]), function(id) {
+  pbsapply(ids(imdata), function(id) {
     income <- as.numeric(fetch_var(
       'income2013',
       by_id = id,
@@ -356,7 +356,7 @@ imdata <- make_new_var('p_inc_donate',
 )
 
 imdata <- make_new_var('is.ETG',
-  pbsapply(unique(imdata[[1]]), function(id) {
+  pbsapply(ids(imdata), function(id) {
     if (!(id %in% fetch_var('career', col = 1))) return(FALSE)
     if (!grepl("ETG", fetch_var('career', by_id = id))) return(FALSE)
     if (!(id %in% fetch_var('income2013', col = 1))) return (FALSE)
@@ -393,7 +393,7 @@ imdata <- swap_by_value(list(
 # In the Random Sample?
 random_sample_ids = c(1606, 1572, 144, 245, 374, 1683, 1612, 1580, 1640, 189, 1575, 163, 1564, 1611, 207, 1577, 1607, 1568, 1630, 1658, 1598, 1561, 1596, 1614, 1615, 252, 1592, 1054, 1570, 1639, 1338) 
 imdata <- make_new_var('in_random_fb_sample', 
-  pbsapply(unique(imdata[[1]]), function(id) {
+  pbsapply(ids(imdata), function(id) {
     if (id %in% random_sample_ids) TRUE else FALSE
   })
 )
