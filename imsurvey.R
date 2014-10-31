@@ -10,16 +10,16 @@ setwd('~/dev/imsurvey')
 
 # First Survey Respondants
 imdata1 <- read.csv('imdata.csv')
-imdata1 <- melt(imdata, id="Response.ID")
-imdata1 <- imdata[!is.na(ids(imdata)),]
+imdata1 <- melt(imdata1, id="Response.ID")
+imdata1 <- imdata1[!is.na(imdata1[[1]]),]
 
 imdata2 <- read.csv('imdata-more-results.csv')
 imdata2 <- melt(imdata2, id="Response.ID")
-imdata2 <- imdata2[!is.na(varnames(imdata2)),]
+imdata2 <- imdata2[!is.na(imdata2[[1]]),]
 
 imdata_ace <- read.csv('ace-results.csv')
 imdata_ace <- melt(imdata_ace, id="Response.ID")
-imdata_ace <- imdata_ace[!is.na(varnames(imdata_ace)),]
+imdata_ace <- imdata_ace[!is.na(imdata_ace[[1]]),]
 pbsapply(ids(imdata_ace), function(id) {
   imdata_ace[imdata_ace[[1]] == id, 1] <<- pp("A#{id}")
 })
