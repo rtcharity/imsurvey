@@ -15,11 +15,11 @@ imdata1 <- imdata[!is.na(ids(imdata)),]
 
 imdata2 <- read.csv('imdata-more-results.csv')
 imdata2 <- melt(imdata2, id="Response.ID")
-imdata2 <- imdata2[!is.na(variables(imdata2)),]
+imdata2 <- imdata2[!is.na(varnames(imdata2)),]
 
 imdata_ace <- read.csv('ace-results.csv')
 imdata_ace <- melt(imdata_ace, id="Response.ID")
-imdata_ace <- imdata_ace[!is.na(variables(imdata_ace),]
+imdata_ace <- imdata_ace[!is.na(varnames(imdata_ace)),]
 pbsapply(ids(imdata_ace), function(id) {
   imdata_ace[imdata_ace[[1]] == id, 1] <<- pp("A#{id}")
 })
