@@ -7,9 +7,22 @@ if (!require(pbapply)) install.packages('pbapply'); require(pbapply)
 
 ### Read Data
 setwd('~/dev/imsurvey')
+
+# First Survey Respondants
 imdata <- read.csv('imdata.csv')
 imdata <- melt(imdata, id="Response.ID")
 imdata <- imdata[!is.na(imdata[[1]]),]
+
+imdata2 <- read.csv('imdata-more-results.csv')
+imdata2 <- melt(imdata2, id="Response.ID")
+imdata2 <- imdata2[!is.na(imdata2[[2]]),]
+imdata <- rbind(imdata, imdata2)
+
+imdata_ace <- read.csv('ace-results.csv')
+imdata_ace <- melt(imdata_ace, id="Response.ID")
+imdata_ace <- imdata_ace[!is.na(imdata_ace[[2]]),]
+imdata <- rbind(imdata, imdata_ace)
+
 set_data(imdata)
 
 # Clean up variable names
