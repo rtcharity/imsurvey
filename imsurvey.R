@@ -20,6 +20,9 @@ imdata2 <- imdata2[!is.na(imdata2[[2]]),]
 imdata_ace <- read.csv('ace-results.csv')
 imdata_ace <- melt(imdata_ace, id="Response.ID")
 imdata_ace <- imdata_ace[!is.na(imdata_ace[[2]]),]
+pbsapply(ids(imdata_ace), function(id) {
+  imdata_ace[imdata_ace[[1]] == id, 1] <<- pp("A#{id}")
+})
 
 imdata <- rbind(imdata1, imdata2, imdata_ace)
 set_data(imdata)
