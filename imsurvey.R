@@ -76,6 +76,7 @@ imdata <- define_variables(list(
   'income2013' = 'What.was.your.pre.tax.income.in.2013.',
   'referrer' = 'Referrer.URL',
   'heardEA' = 'Have.you.ever.heard.of.the.term..Effective.Altruism..or..EA..',
+  'heardEA' = 'Have.you.ever.heard.of.the.term..Û.Effective.Altruism.Ûª.or..Û.EA.Ûª.',
   'gender' = 'Your.gender',
   'age' = 'Your.age',
   'religion' = 'Your.religious.beliefs',
@@ -92,7 +93,7 @@ imdata <- swap_by_value(list(
   'No opinion, or not familiar with these terms' = 'other'
 ), 'metaethics')
 imdata <- swap_multiple_ids(
-  c(17, 45, 122, 201, 217, 377, 425, 524, 571, 971, 974, 994, 1029, 1054, 1060, 1035, 1438, 1459, 1548, 1572, 1678, 1707),
+  c(17, 45, 122, 201, 217, 377, 425, 524, 571, 971, 974, 994, 1029, 1054, 1060, 1035, 1438, 1459, 1548, 1572, 1678, 1707, 1984),
   value = 'consequentialist',
   variable = 'metaethics'
 )
@@ -156,7 +157,7 @@ imdata <- swap_by_value(list(
 # Conversion/Interpolation for Groups, Careers, Income, Donations, and % Income Donated, Oh MY!
 career_transform <- list("11" = "Research", "21" = "ETGHybrid", "36" = "Research", "47" = "ETGHybrid", "53" = "Research", "58" = "ETGHybrid", "122" = "Research", "144" = "ETGHybrid", "233" = "ETGHybrid", "265" = "Direct", "298" = "Direct", "361" = "Research", "265" = "Direct", "387" = "ETG", "393" = "ETGHybrid", "399" = "Direct", "454" = "ETGHybrid", "468" = "ETG", "499" = "ETG", "502" = "ETG", "545" = "Research", "580" = "ETG", "586" = "ETG", "587" = "ETGHybrid", "618" = "ETG", "630" = "Direct", "678" = "ETG", "694" = "ETGHybrid", "706" = "ETGHybrid", "716" = "Direct", "725" = "ETG", "738" = "Direct", "766" = "ETGHybrid", "791" = "Research", "821" = "ETG", "832" = "ETG", "852" = "Direct", "876" = "ETGHybrid", "894" = "ETGHybrid", "1253" = "ETG", "1380" = "ETGHybrid", "1474" = "Research", "1640" = "Research", "1704" = "Direct", "1735" = "ETG", "1739" = "ETG", "1762" = "ETG", "1769" = "ETG", "1786" = "Direct", "1826" = "ETG", "1837" = "Direct")
 
-group_transform <- list("11" = "Felicifia", "35" = "Friend", "37" = "CEA", "38" = "Swiss", "39" = "TLYCS", "49" = "CEA", "51" = "Swiss", "60" = "Swiss", "65" = "CEA", "71" = "Local Group", "78" = "Friend", "96" = "Swiss", "99" = "Swiss", "110" = "Felicifia", "135" = "LW", "146" = "CEA", "143" = "Local Group", "149" = "Friend", "171" = "Local Group", "173" = "Local Group", "213" = "Local Group", "220" = "Friend", "226" = "Search", "230" = "TLYCS", "239" = "Leverage", "260" = "Friend", "279" = "Search", "284" = "Swiss", "318" = "Local Group", "325" = "Friend", "330" = "CEA", "358" = "Local Group", "366" = "Local Group", "372" = "Friend", "373" = "CEA", "458" = "TLYCS", "467" = "Leverage", "506" = "CEA", "516" = "Leverage", "610" = "LW", "685" = "GiveWell", "695" = "CFAR", "724" = "TLYCS", "776" = "TLYCS", "836" = "CEA", "847" = "TLYCS", "848" = "LW", "864" = "TLYCS", "894" = "Search", "917" = "GiveWell", "935" = "Leverage", "942" = "Search", "948" = "Local Group", "959" = "Local Group", "970" = "TLYCS", "1003" = "CFAR", "1060" = "GiveWell", "1130" = "CEA", "1175" = "TLYCS", "1176" = "SSC", "1198" = "SSC", "1207" = "SSC", "1246" = "Friend", "1299" = "TLYCS", "1132" = "TLYCS", "1131" = "THINK", "1413" = "Swiss", "1414" = "Friend", "1441" = "Swiss", "1474" = "THINK", "1488" = "Felicifia", "1513" = "Felicifia", "1517" = "TLYCS", "1592" = "CFAR", "1606" = "Friend", "1611" = "Friend", "1661" = "Friend", "1689" = "CEA", "1804" = "Local Group")
+group_transform <- list("11" = "Felicifia", "35" = "Friend", "37" = "CEA", "38" = "Swiss", "39" = "TLYCS", "49" = "CEA", "51" = "Swiss", "60" = "Swiss", "65" = "CEA", "71" = "Local Group", "78" = "Friend", "96" = "Swiss", "99" = "Swiss", "110" = "Felicifia", "135" = "LW", "146" = "CEA", "143" = "Local Group", "149" = "Friend", "171" = "Local Group", "173" = "Local Group", "213" = "Local Group", "220" = "Friend", "226" = "Search", "230" = "TLYCS", "239" = "Leverage", "260" = "Friend", "279" = "Search", "284" = "Swiss", "318" = "Local Group", "325" = "Friend", "330" = "CEA", "358" = "Local Group", "366" = "Local Group", "372" = "Friend", "373" = "CEA", "458" = "TLYCS", "467" = "Leverage", "506" = "CEA", "516" = "Leverage", "610" = "LW", "685" = "GiveWell", "695" = "CFAR", "724" = "TLYCS", "776" = "TLYCS", "836" = "CEA", "847" = "TLYCS", "848" = "LW", "864" = "TLYCS", "894" = "Search", "917" = "GiveWell", "935" = "Leverage", "942" = "Search", "948" = "Local Group", "959" = "Local Group", "970" = "TLYCS", "1003" = "CFAR", "1060" = "GiveWell", "1130" = "CEA", "1175" = "TLYCS", "1176" = "SSC", "1198" = "SSC", "1207" = "SSC", "1246" = "Friend", "1299" = "TLYCS", "1132" = "TLYCS", "1131" = "THINK", "1413" = "Swiss", "1414" = "Friend", "1441" = "Swiss", "1474" = "THINK", "1488" = "Felicifia", "1513" = "Felicifia", "1517" = "TLYCS", "1592" = "CFAR", "1606" = "Friend", "1611" = "Friend", "1661" = "Friend", "1689" = "CEA", "1804" = "Local Group", "2234" = "THINK", "2239" = "local group", "A233" = "Swiss")
 
 donate_transform <- list(
   "6" = "6216.82", "13" = "1000", "17" = "7000", "18" = "5513.44", "21" = "1985.96", "24" = "30000", "27" = "330", "30" = "100", "31" = "1000", "32" = "2000",
@@ -233,7 +234,10 @@ donate_transform <- list(
   "1769" = "500", "1770" = "16435.210", "1773" = "150", "1777" = "0", "1782" = "8323.64", "1783" = "6482.74", "1784" = "5000", "1786" = "100", "1787" = "300",
   "1788" = "1417.50", "1793" = "810.86", "1796" = "802.20", "1801" = "1500", "1804" = "0", "1809" = "809.70", "1813" = "2582.85", "1814" = "7287.26", "1826" = "0",
   "1831" = "1619.89", "1832" = "11336.11", "1836" = "0", "1837" = "1200", "1848" = "1619.89", "1853" = "92.98", "1862" = "647.96", "1864" = "2570",
-  "1869" = "1943.27", "1871" = "3500", "1889" = "650", "1894" = "1000"
+  "1869" = "1943.27", "1871" = "3500", "1889" = "650", "1894" = "1000", "1899" = "940", "1914" = "96", "1940" = "3200", "1984" = "222.5",
+  "1987" = "100000", "1988" = "150", "1989" = "3200", "2001" = "1000", "2092" = "240", "2104" = "1584", "2105" = "1600", "2132" = "1000",
+  "2160" = "200", "2162" = "20", "2192" = "750", "2239" = "110", "2239" = "384", "A188" = "2200", "A191" = "900", "A200" = "1000",
+  "A209" = "3000", "A214" = "400" 
 )
 
 income_transform <- list(
@@ -327,7 +331,9 @@ income_transform <- list(
   "1786" = "40000.00", "1787" = "1500.00", "1788" = "9201.00", "1793" = "18553.18", "1796" = "25000.00", "1801" = "80000.00", "1804" = "0.00",
   "1809" = "4886.70", "1813" = "23180.04", "1814" = "73376.55", "1826" = "18.00", "1831" = "0.00", "1832" = "57070.65", "1836" = "130000.00",
   "1837" = "13000.00", "1847" = "0.00", "1848" = "8152.95", "1853" = "3219.41", "1862" = "32611.80", "1864" = "25700.00", "1869" = "70100.11",
-  "1871" = "27000.00", "1872" = "18186.86", "1889" = "12000.00", "1894" = "0.00" 
+  "1871" = "27000.00", "1872" = "18186.86", "1889" = "12000.00", "1894" = "0.00", "1899" = "23000", "1914" = "4800", "1931" = "3750",
+  "1984" = "7120", "1986" = "8800", "1987" = "20000", "1988" = "18000", "1989" = "30400", "2092" = "800", "2104" = "247501", "2116" = "28800",
+  "2132" = "32000", "2160" = "6000", "2162" = "200", "2239" = "4700", "2329" = "48000", "A191" = "40000", "A207" = "41000", "A209" = "70000"
 )
 
 imdata <- swap_by_ids(career_transform, 'career')
@@ -405,6 +411,7 @@ imdata <- imdata[imdata[[1]] %in% ea_ids,]
 
 ## Demographics
 set_data(imdata_with_non_eas)
+length(ids(imdata))
 table(fetch_var('heardEA'))
 table(fetch_var('describeEA'))
 table(
@@ -414,6 +421,10 @@ table(
 percent_table(fetch_var_by('describeEA', list('heardEA' = 'Yes'), col = 'all'))
 
 set_data(imdata)
+sort(table(fetch_var('group')))
+sort(table(fetch_var('referrer')))
+
+
 table(fetch_var('gender'))
 fetch_percent_table('gender')
 
@@ -430,8 +441,6 @@ fetch_percent_table('location', round = 2)
 sort(table(fetch_var('sublocation')))
 table(fetch_var('friendcount'))
 
-sort(table(fetch_var('group')))
-sort(table(fetch_var('referrer')))
 
 factors = c('contact', '80K', 'TLYCS', 'LW', 'GWWC', 'givewell', 'friends', 'online', 'chapter')
 pbsapply(factors, function(x) table(fetch_var(pp("factors_#{x}"))))
@@ -669,7 +678,7 @@ percent_table(fetch_var_by('religion', list('referrer' = 'EAFB')))
 stattest('atheist', 'in_random_fb_sample', 'chisquare')
 percent_table(fetch_var_by('diet3', list('in_random_fb_sample' = TRUE)))
 stattest('diet3', 'in_random_fb_sample', 'chisquare')
-rercent_table(fetch_var_by('poverty', list('in_random_fb_sample' = TRUE)))
+percent_table(fetch_var_by('poverty', list('in_random_fb_sample' = TRUE)))
 stattest('poverty', 'in_random_fb_sample', 'chisquare')
 percent_table(fetch_var_by('environmentalism', list('referrer' = 'EAFB')))
 percent_table(fetch_var_by('environmentalism', list('in_random_fb_sample' = TRUE)))
