@@ -126,17 +126,19 @@ imdata <- make_new_var('atheist', pbsapply(
 
 # Group
 imdata <- swap_by_value(list(
-  '80,000 Hours' = 'CEA',
+  '80,000 Hours' = '80K',
   'Animal Charity Evaluators (formerly Effective Animal Activism)' = 'ACE',
   'Animal Charity Evaluators (formerly Effective Animal Activism)' = 'ACE',
+  'Animal Charity Evaluators (formerlyåÊEffective Animal Activism)' = 'ACE',
   'Facebook' = 'FB',
   'Friend' = 'Friend',
   'GiveWell' = 'GiveWell',
-  'Giving What We Can' = 'CEA',
+  'Giving What We Can' = 'GWWC',
   'LessWrong' = 'LW',
   'Search engine' = 'Search',
   'TED Talk (Peter Singer)' = 'TED',
-  'The Life You Can Save' = 'TLYCS'
+  'The Life You Can Save' = 'TLYCS',
+  'local group' = 'Local Group'
 ), 'group') # Having ACE twice is because one has a space and one has a tab.
 
 # Factors
@@ -395,6 +397,8 @@ imdata <- swap_by_value(list(
   't' = 'Personal',
   'p' = 'Personal'
 ), 'referrer', data = imdata)
+imdata <- swap_multiple_ids(ids(imdata_ace), value = 'ACE')
+
 
 # In the Random Sample?
 random_sample_ids = c(1606, 1572, 144, 245, 374, 1683, 1612, 1580, 1640, 189, 1575, 163, 1564, 1611, 207, 1577, 1607, 1568, 1630, 1658, 1598, 1561, 1596, 1614, 1615, 252, 1592, 1054, 1570, 1639, 1338) 
@@ -423,7 +427,6 @@ percent_table(fetch_var_by('describeEA', list('heardEA' = 'Yes'), col = 'all'))
 set_data(imdata)
 sort(table(fetch_var('group')))
 sort(table(fetch_var('referrer')))
-
 
 table(fetch_var('gender'))
 fetch_percent_table('gender')
