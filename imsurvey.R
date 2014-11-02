@@ -75,6 +75,7 @@ imdata <- define_variables(list(
   'donate2013' = 'Over.2013..how.much.in.total.did.you.donate.',
   'income2013' = 'What.was.your.pre.tax.income.in.2013.',
   'referrer' = 'Referrer.URL',
+  'referrer2' = 'Postcode.Total.time.source',
   'heardEA' = 'Have.you.ever.heard.of.the.term..Effective.Altruism..or..EA..',
   'heardEA' = 'Have.you.ever.heard.of.the.term..Û.Effective.Altruism.Ûª.or..Û.EA.Ûª.',
   'gender' = 'Your.gender',
@@ -238,8 +239,8 @@ donate_transform <- list(
   "1831" = "1619.89", "1832" = "11336.11", "1836" = "0", "1837" = "1200", "1848" = "1619.89", "1853" = "92.98", "1862" = "647.96", "1864" = "2570",
   "1869" = "1943.27", "1871" = "3500", "1889" = "650", "1894" = "1000", "1899" = "940", "1914" = "96", "1940" = "3200", "1984" = "222.5",
   "1987" = "100000", "1988" = "150", "1989" = "3200", "2001" = "1000", "2092" = "240", "2104" = "1584", "2105" = "1600", "2132" = "1000",
-  "2160" = "200", "2162" = "20", "2192" = "750", "2239" = "110", "2239" = "384", "A188" = "2200", "A191" = "900", "A200" = "1000",
-  "A209" = "3000", "A214" = "400" 
+  "2160" = "200", "2162" = "20", "2192" = "750", "2239" = "110", "2329" = "384", "A188" = "2200", "A191" = "900", "A200" = "1000",
+  "A209" = "3000", "A214" = "400", "349" = "", "257" = "", "215" = "", "35" = ""
 )
 
 income_transform <- list(
@@ -335,7 +336,8 @@ income_transform <- list(
   "1837" = "13000.00", "1847" = "0.00", "1848" = "8152.95", "1853" = "3219.41", "1862" = "32611.80", "1864" = "25700.00", "1869" = "70100.11",
   "1871" = "27000.00", "1872" = "18186.86", "1889" = "12000.00", "1894" = "0.00", "1899" = "23000", "1914" = "4800", "1931" = "3750",
   "1984" = "7120", "1986" = "8800", "1987" = "20000", "1988" = "18000", "1989" = "30400", "2092" = "800", "2104" = "247501", "2116" = "28800",
-  "2132" = "32000", "2160" = "6000", "2162" = "200", "2239" = "4700", "2329" = "48000", "A191" = "40000", "A207" = "41000", "A209" = "70000"
+  "2132" = "32000", "2160" = "6000", "2162" = "200", "2239" = "4700", "2329" = "48000", "A191" = "40000", "A207" = "41000", "A209" = "70000",
+  "1940" = "80000", "1606" = "0", "1695" = "NA"
 )
 
 imdata <- swap_by_ids(career_transform, 'career')
@@ -387,6 +389,7 @@ imdata[
   substring(imdata[[3]],1,1)=='t' &
   !is.na(imdata[[3]]), 3
 ] <- 't'
+set_data(imdata)
 imdata <- swap_by_value(list(
   's=9' = 'EAFB',
   's=14' = 'LW',
@@ -396,8 +399,19 @@ imdata <- swap_by_value(list(
   'eah-profiles' = 'EA Profiles',
   't' = 'Personal',
   'p' = 'Personal'
-), 'referrer', data = imdata)
-imdata <- swap_multiple_ids(ids(imdata_ace), value = 'ACE')
+), 'referrer')
+imdata <- swap_multiple_ids(ids(imdata_ace), value = 'ACE', variable = 'referrer')
+
+imdata[imdata[[2]] == "referrer2" & nchar(imdata[[3]]) < 5, 3] <- ""
+set_data(imdata)
+imdata <- swap_by_value(list(
+  'An EA Facebook group' = 'EAFB',
+  'EA organisation' = 'EA Org?',
+  'Local group or chapter' = 'Local group',
+  'LessWrong' = 'LW',
+  'Elsewhere on Facebook or social media' = 'FB elsewhere',
+  'Animal Charity Evaluators (email, blog, etc.)' = 'ACE'
+), 'referrer2')
 
 
 # In the Random Sample?
@@ -427,6 +441,14 @@ percent_table(fetch_var_by('describeEA', list('heardEA' = 'Yes'), col = 'all'))
 set_data(imdata)
 sort(table(fetch_var('group')))
 sort(table(fetch_var('referrer')))
+sort(table(fetch_var('referrer2')))
+
+r1 <- fetch_var('referrer', col = 'all')
+r2 <- fetch_var('referrer2', col = 'all')
+r1 <- r1[ids(r1) %in% ids(r2),]
+r2 <- r2[ids(r2) %in% ids(r1),3]
+r1 <- r1[[3]]
+table(r1, r2)
 
 table(fetch_var('gender'))
 fetch_percent_table('gender')
