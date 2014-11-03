@@ -596,6 +596,7 @@ chisq.test(table(
 ))
 
 table(fetch_var('career'))
+fetch_percent_table('career')
 
 fn_on_df(fetch_var_by('donate2013',
   list('career' = 'ETG', 'student' = 'No')),
