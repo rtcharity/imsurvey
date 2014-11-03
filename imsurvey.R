@@ -196,6 +196,18 @@ imdata <- swap_by_value(list(
   "Other" = "None"
 ), 'career')
 
+# Donate to Multiple Charities
+charity_vars = c('donateAMF', 'donateSCI', 'donateGD', 'donateMIRI', 'donateCFAR',
+  'donateGW', 'donateDTW', 'donateVO', 'donateTHL', 'donate80K', 'donateCEA',
+  'donatePHC', 'donateGWWC', 'donateACE', 'donateLeverage')
+imdata <- make_new_var('charity_count',
+  pbsapply(ids(imdata), function(id) {
+    count <- 0
+    for (charity in charity_vars)
+      if (identical(fetch_var(charity, by_id = id), 'Yes')) count <- count + 1
+    count
+  })
+)
                                                          
 # Conversion/Interpolation for Groups, Careers, Income, Donations, and % Income Donated, Oh MY!
 career_transform <- list("11" = "Research", "21" = "ETGHybrid", "36" = "Research", "47" = "ETGHybrid", "53" = "Research", "58" = "ETGHybrid", "122" = "Research", "144" = "ETGHybrid", "233" = "ETGHybrid", "265" = "Direct", "298" = "Direct", "361" = "Research", "265" = "Direct", "387" = "ETG", "393" = "ETGHybrid", "399" = "Direct", "454" = "ETGHybrid", "468" = "ETG", "499" = "ETG", "502" = "ETG", "545" = "Research", "580" = "ETG", "586" = "ETG", "587" = "ETGHybrid", "618" = "ETG", "630" = "Direct", "678" = "ETG", "694" = "ETGHybrid", "706" = "ETGHybrid", "716" = "Direct", "725" = "ETG", "738" = "Direct", "766" = "ETGHybrid", "791" = "Research", "821" = "ETG", "832" = "ETG", "852" = "Direct", "876" = "ETGHybrid", "894" = "ETGHybrid", "1253" = "ETG", "1380" = "ETGHybrid", "1474" = "Research", "1640" = "Research", "1704" = "Direct", "1735" = "ETG", "1739" = "ETG", "1762" = "ETG", "1769" = "ETG", "1786" = "Direct", "1826" = "ETG", "1837" = "Direct")
@@ -546,6 +558,8 @@ table(fetch_var('donateGWWC'))
 table(fetch_var('donateACE'))
 table(fetch_var('donateLeverage'))
 
+breakdown('charity_count', seq = seq(0, 8))
+
 table(fetch_var('poverty'))
 table(fetch_var('metacharity'))
 table(fetch_var('rationality'))
@@ -589,7 +603,7 @@ fn_on_df(fetch_var_by('donate2013',
 )
 fn_on_df(fetch_var_by('donate2013',
   list('career' = 'ETG', 'student' = 'No')),
-  mean
+  median
 )
 t.test(
   as.numeric(fetch_var('donate2013')),
