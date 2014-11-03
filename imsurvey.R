@@ -147,6 +147,46 @@ imdata <- swap_multiple_ids(c(13, 31, 79, 110, 146, 367, 374, 383, 534, 577), 'Y
 imdata <- swap_multiple_ids(c(271), 'Yes', 'factors_givewell', imdata)
 imdata <- swap_multiple_ids(c(361, 374, 606), 'Yes', 'factors_online', imdata)
 
+# City Location
+imdata <- swap_by_value(list(
+  'San Francisco' = 'Bay Area',
+  'Berkeley' = 'Bay Area',
+  'New York City' = 'New York',
+  'Cambridge, MA' = 'Boston',
+  'Berkeley, CA' = 'Bay Area',
+  'Palo Alto' = 'Bay Area',
+  'Oakland, CA' = 'Bay Area',
+  'San Francisco Bay Area, CA' = 'Bay Area',
+  'Menlo Park' = 'Bay Area',
+  'Mountain View' = 'Bay Area',
+  'Los Altos, CA' = 'Bay Area',
+  'Berkeley, California, USA' = 'Bay Area',
+  'Berkeley CA' = 'Bay Area',
+  'berkeley' = 'Bay Area',
+  'Bay area' = 'Bay Area',
+  'Sunnyvale' = 'Bay Area',
+  'basel' = 'Basel',
+  'Lonodn' = 'London',
+  'london' = 'London',
+  'chicago, IL' = 'Chicago',
+  'Washington, DC' = 'Washington DC',
+  'seattle' = 'Seattle',
+  'oxford' = 'Oxford',
+  'Oxford and Bath' = 'Oxford',
+  'NYC' = 'New York City',
+  'NY' = 'New York City',
+  'New York ' = 'New York City',
+  'nyc' = 'New York City',
+  'Melbourne/Taree' = 'Melbourne',
+  'Melbourne (or near enough)' = 'Melbourne',
+  'Melbourne ' = 'Melbourne',
+  'Boston, MA' = 'Boston',
+  'Washington, D.C.' = 'Washington DC',
+  'Washington D.C.' = 'Washington DC',
+  'Vancouver, BC, Canada' = 'Vancouver',
+  'Vancouver ' = 'Vancouver'
+), 'sublocation')
+
 # Careers
 imdata <- swap_by_value(list(
   "Direct charity/non-profit work" = "Direct",
@@ -450,28 +490,13 @@ r2 <- r2[ids(r2) %in% ids(r1),3]
 r1 <- r1[[3]]
 table(r1, r2)
 
-table(fetch_var('gender'))
-fetch_percent_table('gender')
+factors = c('contact', '80K', 'TLYCS', 'LW', 'GWWC', 'givewell', 'friends', 'online', 'chapter')
+pbsapply(factors, function(x) table(fetch_var(pp("factors_#{x}"))))
 
-fn_on_df(fetch_var('age'), mean)
-fn_on_df(fetch_var('age'), median)
-fn_on_df(fetch_var('age'), sd)
-
-sort(table(fetch_var('religion')))
-fetch_percent_table('religion')
-table(fetch_var('student'))
-fetch_percent_table('student')
 sort(table(fetch_var('location')))
 fetch_percent_table('location', round = 2)
 sort(table(fetch_var('sublocation')))
 table(fetch_var('friendcount'))
-
-
-factors = c('contact', '80K', 'TLYCS', 'LW', 'GWWC', 'givewell', 'friends', 'online', 'chapter')
-pbsapply(factors, function(x) table(fetch_var(pp("factors_#{x}"))))
-
-table(fetch_var('metaethics'))
-fetch_percent_table('metaethics')
 
 length(fetch_var('donate2013', data = imdata_with_non_eas))
 length(fetch_var('donate2013', data = imdata))
@@ -505,35 +530,34 @@ breakdown(
   seq = c(seq(1,3), 5, seq(10,20,by=5), seq(30,90,by=10)) 
 )
 
-table(fetch_var('donate80K'))
 table(fetch_var('donateAMF'))
-table(fetch_var('donateACE'))
-table(fetch_var('donateCEA'))
-table(fetch_var('donateCFAR'))
-table(fetch_var('donateDTW'))
-table(fetch_var('donateGD'))
-table(fetch_var('donateGW'))
-table(fetch_var('donateGWWC'))
-table(fetch_var('donateTHL'))
-table(fetch_var('donateLeverage'))
-table(fetch_var('donateMIRI'))
-table(fetch_var('donatePHC'))
 table(fetch_var('donateSCI'))
+table(fetch_var('donateGD'))
+table(fetch_var('donateMIRI'))
+table(fetch_var('donateCFAR'))
+table(fetch_var('donateGW'))
+table(fetch_var('donateDTW'))
 table(fetch_var('donateVO'))
+table(fetch_var('donateTHL'))
+table(fetch_var('donate80K'))
+table(fetch_var('donateCEA'))
+table(fetch_var('donatePHC'))
+table(fetch_var('donateGWWC'))
+table(fetch_var('donateACE'))
+table(fetch_var('donateLeverage'))
 
 table(fetch_var('poverty'))
-table(fetch_var('environmentalism'))
-table(fetch_var('animals'))
+table(fetch_var('metacharity'))
 table(fetch_var('rationality'))
-table(fetch_var('politics'))
+table(fetch_var('prioritization'))
 table(fetch_var('ai'))
 table(fetch_var('xrisk'))
+table(fetch_var('environmentalism'))
+table(fetch_var('animals'))
+table(fetch_var('politics'))
 table(fetch_var('farfuture'))
-table(fetch_var('prioritization'))
-table(fetch_var('metacharity'))
 length(fetch_var('causeother'))
 
-table(fetch_var('metacharity'), fetch_var('rationality'))
 table(
   fetch_var('metacharity'),
   fetch_var('rationality'),
@@ -547,12 +571,15 @@ table(
 
 table(fetch_var('diet'))
 fetch_percent_table('diet')
-fetch_percent_table('diet3')
 
 prop.table(table(
   fetch_var('diet', na.rm = FALSE),
   fetch_var('animals', na.rm = FALSE)
 ),1)
+chisq.test(table(
+  fetch_var('diet', na.rm = FALSE),
+  fetch_var('animals', na.rm = FALSE)
+))
 
 table(fetch_var('career'))
 
@@ -573,33 +600,25 @@ length(fetch_var('is.ETG', select = TRUE))
 table(fetch_var_by('career', list('is.ETG' = TRUE)))
 fn_on_df(fetch_var_by('donate2013', list('is.ETG' = TRUE)), sum)
 
-fn_on_df(fetch_var('age'), min)
+table(fetch_var('gender'))
+fetch_percent_table('gender')
+percent_table(fetch_var_by('gender', list('referrer' = 'LW'), compare = '!='))
+
+fn_on_df(fetch_var('age'), mean)
+fn_on_df(fetch_var('age'), median)
+fn_on_df(fetch_var('age'), sd)
+fn_on_df(fetch_var('age'), quantile, probs = seq(0, 1, len = 5))
 fn_on_df(fetch_var('age'), max)
+fn_on_df(fetch_var('age'), min)
 
-# GiveWell comparison
-length(fetch_var('donate2013', '>=', 100000))
-length(fetch_var_in_range('donate2013', 50000, 99999))
-length(fetch_var_in_range('donate2013', 10000, 49999))
-length(fetch_var_in_range('donate2013', 5000, 9999))
-length(fetch_var_in_range('donate2013', 1000, 4999))
-length(fetch_var_in_range('donate2013', 1, 999))
+sort(table(fetch_var('religion')))
+fetch_percent_table('religion')
 
-ids_of_2K_or_more <- imdata[
-  imdata[[2]] == 'donate2013' &
-    as.numeric(imdata[[3]]) > 2000 &
-    !is.na(as.numeric(imdata[[3]])), 1
-]
-imdata_of_2K_or_more <- imdata[imdata[[1]] %in% ids_of_2K_or_more,]
-set_data(imdata_of_2K_or_more)
-length(fetch_var_in_range('age', 20, 29))
-length(fetch_var_in_range('age', 30, 39))
-length(fetch_var_in_range('age', 40, 49))
-length(fetch_var_in_range('age', 50, 59))
-length(fetch_var_in_range('age', 60, 69))
-length(fetch_var_in_range('age', 70, 79))
-table(fetch_var('group'))
-length(fetch_var('age', '>=', 80))
-set_data(imdata)
+table(fetch_var('student'))
+fetch_percent_table('student')
+
+table(fetch_var('metaethics'))
+fetch_percent_table('metaethics')
 
 # LessWrong comparison
 fn_on_df(fetch_var_by('age', list('referrer' = 'LW')), mean)
@@ -619,6 +638,7 @@ fn_on_df(fetch_var_by('donate2013',
 ), median)
 fn_on_df(fetch_var_by('income2013', list('student' = 'No')), median)
 fn_on_df(fetch_var_by('donate2013', list('student' = 'No')), median)
+length(fetch_var('referrer', select = 'LW'))
 
 # EA FB Comparison
 fn_on_df(fetch_var_by('age', list('referrer' = 'EAFB')), mean)
@@ -636,6 +656,7 @@ fn_on_df(fetch_var_by('income2013',
 fn_on_df(fetch_var_by('donate2013',
   list('referrer' = 'EAFB', 'student' = 'No'),
 ), median)
+length(fetch_var('referrer', select = 'EAFB'))
 
 # Personal Comparison
 fn_on_df(fetch_var_by('age', list('referrer' = 'Personal')), mean)
@@ -654,12 +675,13 @@ fn_on_df(fetch_var_by('income2013',
 fn_on_df(fetch_var_by('donate2013',
   list('referrer' = 'Personal', 'student' = 'No'),
 ), median)
+length(fetch_var('referrer', select = 'Personal'))
 
 # Statistical Testing
+stattest('age', 'referrer', 'lm', ignore = list('OtherFB', 'Special', 'EA Profiles'))
 stattest('gender', 'referrer', 'chisquare',
   ignore = list('Other', 'OtherFB', 'Special', 'EA Profiles')
 )
-stattest('age', 'referrer', 'lm', ignore = list('OtherFB', 'Special'))
 stattest('metaethics', 'referrer', 'chisquare',
   ignore = list('OtherFB', 'Special', 'EA Profiles')
 )
@@ -720,3 +742,30 @@ fn_on_df(fetch_var_by('donate2013',
   list('in_random_fb_sample' = TRUE, 'student' = 'No'),
 ), median)
 stattest('donate2013', 'in_random_fb_sample', 'ttest')
+
+# GiveWell comparison
+length(fetch_var('donate2013', '>=', 100000))
+length(fetch_var_in_range('donate2013', 50000, 99999))
+length(fetch_var_in_range('donate2013', 10000, 49999))
+length(fetch_var_in_range('donate2013', 5000, 9999))
+length(fetch_var_in_range('donate2013', 1000, 4999))
+length(fetch_var_in_range('donate2013', 1, 999))
+
+ids_of_2K_or_more <- imdata[
+  imdata[[2]] == 'donate2013' &
+    as.numeric(imdata[[3]]) > 2000 &
+    !is.na(as.numeric(imdata[[3]])), 1
+]
+imdata_of_2K_or_more <- imdata[imdata[[1]] %in% ids_of_2K_or_more,]
+set_data(imdata_of_2K_or_more)
+length(fetch_var_in_range('age', 20, 29))
+length(fetch_var_in_range('age', 30, 39))
+length(fetch_var_in_range('age', 40, 49))
+length(fetch_var_in_range('age', 50, 59))
+length(fetch_var_in_range('age', 60, 69))
+length(fetch_var_in_range('age', 70, 79))
+table(fetch_var('group'))
+length(fetch_var('age', '>=', 80))
+set_data(imdata)
+
+
