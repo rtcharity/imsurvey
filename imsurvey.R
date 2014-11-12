@@ -467,7 +467,7 @@ imdata <- swap_by_value(list(
 
 
 # In the Random Sample?
-random_sample_ids = c(1606, 1572, 144, 245, 374, 1683, 1612, 1580, 1640, 189, 1575, 163, 1564, 1611, 207, 1577, 1607, 1568, 1630, 1658, 1598, 1561, 1596, 1614, 1615, 252, 1592, 1054, 1570, 1639, 1338) 
+random_sample_ids = c(1606, 1572, 144, 245, 374, 1683, 1612, 1580, 1640, 189, 1575, 163, 1564, 1611, 207, 1577, 1607, 1568, 1630, 1658, 1598, 1561, 1596, 1614, 1615, 252, 1592, 1054, 1570, 1639, 1338, 1899) 
 imdata <- make_new_var('in_random_fb_sample', 
   pbsapply(ids(imdata), function(id) {
     if (id %in% random_sample_ids) TRUE else FALSE
