@@ -93,11 +93,6 @@ imdata <- swap_by_value(list(
   'Other' = 'other',
   'No opinion, or not familiar with these terms' = 'other'
 ), 'metaethics')
-imdata <- swap_multiple_ids(
-  c(17, 45, 122, 201, 217, 377, 425, 524, 571, 971, 974, 994, 1029, 1054, 1060, 1035, 1438, 1459, 1548, 1572, 1678, 1707, 1984),
-  value = 'consequentialist',
-  variable = 'metaethics'
-)
 
 # Diet
 new_diet_variable <- function(switch) {
