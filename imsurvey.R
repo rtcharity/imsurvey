@@ -386,7 +386,6 @@ income_transform <- list(
 )
 
 imdata <- swap_by_ids(career_transform, 'career')
-imdata <- swap_by_ids(group_transform, 'group')
 imdata <- swap_by_ids(donate_transform, 'donate2013')
 imdata <- swap_by_ids(income_transform, 'income2013')
 
