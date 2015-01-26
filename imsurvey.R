@@ -2,7 +2,7 @@
 if (!require(reshape2)) install.packages('reshape2'); require(reshape2)
 if (!require(devtools)) install.packages('devtools'); require(devtools)
 if (!require(surveytools)) install_github('peterhurford/surveytools'); require(surveytools)
-if (!require(productivus)) install_github('robertzk/Ramd'); require(productivus)
+if (!require(productivus)) install_github('robertzk/productivus'); require(productivus)
 if (!require(pbapply)) install.packages('pbapply'); require(pbapply)
 
 ### Read Data
