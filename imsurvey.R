@@ -643,6 +643,9 @@ fn_on_df(fetch_var_by('income2013',
 fn_on_df(fetch_var_by('donate2013',
   list('referrer' = 'LW', 'student' = 'No'),
 ), median)
+fn_on_df(fetch_var_by('p_inc_donate',
+  list('referrer' = 'LW', 'student' = 'No'),
+), median)
 fn_on_df(fetch_var_by('income2013', list('student' = 'No')), median)
 fn_on_df(fetch_var_by('donate2013', list('student' = 'No')), median)
 length(fetch_var('referrer', select = 'LW'))
@@ -663,6 +666,9 @@ fn_on_df(fetch_var_by('income2013',
 fn_on_df(fetch_var_by('donate2013',
   list('referrer' = 'EAFB', 'student' = 'No'),
 ), median)
+fn_on_df(fetch_var_by('p_inc_donate',
+  list('referrer' = 'EAFB', 'student' = 'No'),
+), median)
 length(fetch_var('referrer', select = 'EAFB'))
 
 # Personal Comparison
@@ -680,6 +686,9 @@ fn_on_df(fetch_var_by('income2013',
   list('referrer' = 'Personal', 'student' = 'No'),
 ), median)
 fn_on_df(fetch_var_by('donate2013',
+  list('referrer' = 'Personal', 'student' = 'No'),
+), median)
+fn_on_df(fetch_var_by('p_inc_donate',
   list('referrer' = 'Personal', 'student' = 'No'),
 ), median)
 length(fetch_var('referrer', select = 'Personal'))
@@ -711,6 +720,9 @@ stattest('income2013', 'referrer', 'lm',
   ignore = list('OtherFB', 'Special', 'EA Profiles')
 )
 stattest('donate2013', 'referrer', 'lm',
+  ignore = list('OtherFB', 'Special', 'EA Profiles')
+)
+stattest('p_inc_donate', 'referrer', 'lm',
   ignore = list('OtherFB', 'Special', 'EA Profiles')
 )
 
