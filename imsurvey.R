@@ -622,14 +622,20 @@ fn_on_df(fetch_var('age'), median)
 fn_on_df(fetch_var('age'), sd)
 fn_on_df(fetch_var('age'), hist, xlab = 'Age', main = '')
 
-sort(table(fetch_var('religion')))
-fetch_percent_table('religion')
+sort(table(fetch_var('religion', na.rm = FALSE)))
+prop.table(table(fetch_var('religion', na.rm = FALSE)))
+table(fetch_var('religion', na.rm = FALSE), fetch_var('referrer', na.rm = FALSE))
+prop.table(table(fetch_var('religion', na.rm = FALSE), fetch_var('referrer', na.rm = FALSE)), 2)
 
-table(fetch_var('student'))
-fetch_percent_table('student')
+table(fetch_var('student', na.rm = FALSE))
+prop.table(table(fetch_var('student', na.rm = FALSE)))
+table(fetch_var('student', na.rm = FALSE), fetch_var('referrer', na.rm = FALSE))
+prop.table(table(fetch_var('student', na.rm = FALSE), fetch_var('referrer', na.rm = FALSE)), 2)
 
-table(fetch_var('metaethics'))
-fetch_percent_table('metaethics')
+table(fetch_var('metaethics', na.rm = FALSE))
+prop.table(table(fetch_var('metaethics', na.rm = FALSE)))
+table(fetch_var('metaethics', na.rm = FALSE), fetch_var('referrer', na.rm = FALSE))
+prop.table(table(fetch_var('metaethics', na.rm = FALSE), fetch_var('referrer', na.rm = FALSE)), 2)
 
 # LessWrong comparison
 fn_on_df(fetch_var_by('age', list('referrer' = 'LW')), mean)
