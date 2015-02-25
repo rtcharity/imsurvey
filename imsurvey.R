@@ -186,8 +186,8 @@ list('imdata.csv', 'imdata-more-results.csv') %>%
     }
     mutate(., p_inc_donate = make_p_inc_donate(donate2013, income2013))
   } %>% {
-    is.annoying <- function(x) is.na_like(x) | is.nan(x) | is.infinite(x)
-    mutate(., p_inc_donate = !is.annoying(p_inc_donate))
+    is.annoying <- function(x) is.na_like(x) | is.nan(x) | is.infinite(x) | x == "NaN" | x == "Inf"
+    mutate(., p_inc_donate = ifelse(is.annoying(p_inc_donate), NA, p_inc_donate))
   } %>% # Get data on percentage of income donated
   mutate(
     income2013 = as.numeric(income2013),
@@ -257,12 +257,20 @@ imdata %>% dplyr::filter(donate2013 == 0) %>% select(donate2013) %>% num_respond
 imdata %>% gather(donate2013) %>% var_summary
 imdata %>% dplyr::filter(student == "No") %>% gather(donate2013) %>% var_summary
 imdata %>% dplyr::filter(student == "Yes") %>% gather(donate2013) %>% var_summary
+t.test(imdata$donate2013, imdata$student == "Yes")
 imdata %>% gather(donate2013) %>% quantile(probs = seq(0.1, 1, len = 10), na.rm = TRUE)
 imdata %>% gather(donate2013) %>% quantile(probs = seq(0.91, 1, len = 10), na.rm = TRUE)
 imdata %>% dplyr::filter(income2013 >= 10000) %>% gather(p_inc_donate) %>% var_summary
 imdata %>% dplyr::filter(income2013 >= 10000 & student == "No") %>% gather(p_inc_donate) %>% var_summary
 imdata %>% dplyr::filter(income2013 >= 10000) %>% num_respondants
 imdata %>% dplyr::filter(income2013 >= 10000) %>% breakdown('p_inc_donate', c(seq(3), seq(5, 20, by = 5), seq(30, 100, by = 10)))
+cuts <- c(1, seq(0, 50, by = 5)[-1])
+imdata %>% dplyr::filter(income2013 >= 10000) %>% numeric_breakdown('p_inc_donate', cuts) %>% {
+  plot.new()
+  plot(., ylab = '', xaxt = 'n')
+  axis(side = 1, at = seq_along(cuts), labels = cuts)
+}
+imdata %>% gather(p_inc_donate) %>% cut(rev(cuts), right = FALSE) %>% table %>% cumsum %>% plot 
 
 c(
   'AMF', 'SCI', 'GD', 'MIRI', 'CFAR', 'GW', 'DTW', 'VO', 'THL', '80K', 'CEA', 'PHC', 'GWWC', 'ACE', 'Leverage'
@@ -283,8 +291,9 @@ imdata %>% dplyr_table(diet, animals, percent = TRUE)
 chisq.test(imdata$diet, imdata$animals)
 
 imdata %>% dplyr_table(career)
-imdata %>% dplyr::filter(student == "No" & career == "ETG") %>% gather(donate2013) %>% median(na.rm = TRUE)
-t.test(imdata$donate2013, imdata$is.ETG)
+imdata %>% dplyr::filter(student == "No" & career == "ETG") %>% gather(donate2013) %>% var_summary
+t.test(imdata$donate2013, imdata$career == "ETG")
+t.test(imdata$p_inc_donate, imdata$career == "ETG")
 imdata %>% dplyr::filter(is.ETG == TRUE) %>% num_respondants
 imdata %>% dplyr::filter(is.ETG == TRUE) %>% gather(donate2013) %>% sum
 
