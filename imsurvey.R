@@ -171,7 +171,7 @@ list('imdata.csv', 'imdata-more-results.csv') %>%
   left_join(., count_vars(., c('donateAMF', 'donateSCI', 'donateGD', 'donateMIRI', 'donateCFAR',
     'donateGW', 'donateDTW', 'donateVO', 'donateTHL', 'donate80K', 'donateCEA',
     'donatePHC', 'donateGWWC', 'donateACE', 'donateLeverage'),
-     yes = 'Yes', colname = 'charity_count')) %>%   # Append number of charities donated
+     response = 'Yes', colname = 'charity_count')) %>%   # Append number of charities donated
   swap_by_ids('career', career_transform) %>%       # Imputation with career responses
   swap_by_ids('donate2013', donate_transform) %>%   # Imputation with donation responses
   swap_by_ids('income2013', income_transform) %>%   # Imputation with income responses
