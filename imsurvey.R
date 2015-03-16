@@ -280,8 +280,9 @@ imdata %>% breakdown('charity_count', seq(7))
 
 c('poverty', 'metacharity', 'rationality', 'prioritization', 'ai', 'xrisk', 'environmentalism', 'animals', 'politics', 'farfuture') %>%
   sapply(function(x) table(imdata[[x]]))
+t.test(imdata$poverty == "Yes", imdata$metacharity == "Yes")
 
-imdata %>% dplyr_table(metacharity, rationality, prioritization, percent = TRUE, freq = TRUE)
+ %>% dplyr_table(metacharity, rationality, prioritization, percent = TRUE, freq = TRUE)
 
 imdata %>% dplyr_table(diet)
 imdata %>% dplyr_table(reducitarian, percent = TRUE)
