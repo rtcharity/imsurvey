@@ -282,7 +282,7 @@ c('poverty', 'metacharity', 'rationality', 'prioritization', 'ai', 'xrisk', 'env
   sapply(function(x) table(imdata[[x]]))
 t.test(imdata$poverty == "Yes", imdata$metacharity == "Yes")
 
- %>% dplyr_table(metacharity, rationality, prioritization, percent = TRUE, freq = TRUE)
+imdata %>% dplyr_table(metacharity, rationality, prioritization, percent = TRUE, freq = TRUE)
 
 imdata %>% dplyr_table(diet)
 imdata %>% dplyr_table(reducitarian, percent = TRUE)
