@@ -1,9 +1,13 @@
+### Reproducible Settings
+options(stringsAsFactors = FALSE)
+
 ### Load Libraries
-if (!require(magrittr)) install.packages('magrittr'); require(magrittr)
-if (!require(dplyr)) install.packages('dplyr'); require(dplyr)
-if (!require(devtools)) install.packages('devtools'); require(devtools)
-if (!require(surveytools2)) install_github('peterhurford/surveytools2'); require(surveytools2)
-if (!require(summarizeR)) install_github('peterhurford/summarizeR'); require(summarizeR)
+if (!require(magrittr)) install.packages('magrittr'); library(magrittr)
+if (!require(plyr)) install.packages('plyr'); library(plyr)
+if (!require(dplyr)) install.packages('dplyr'); library(dplyr)
+if (!require(devtools)) install.packages('devtools'); library(devtools)
+if (!require(surveytools2)) install_github('peterhurford/surveytools2'); library(surveytools2)
+if (!require(summarizeR)) install_github('peterhurford/summarizeR'); library(summarizeR)
 
 '~/dev/imsurvey' %>% setwd()           # Set wd to where CSVs are
 'transform_lookups.R' %>% source()     # Source lookup tables (we'll need them later)
@@ -29,10 +33,10 @@ cleaning_steps_for_ace_data <- function(df)  # Cleaning functions specifically f
 
 list('imdata.csv', 'imdata-more-results.csv') %>%
   lapply(., function(l) l %>% read.csv %>% cleaning_steps) %>%
-  Reduce(rbind.fill, .) -> data  # Load imdata
+  Reduce(plyr::rbind.fill, .) -> data  # Load imdata
 
 'ace-results.csv' %>% read.csv %>% cleaning_steps_for_ace_data %>% # Load ACE data
-  rbind.fill(data) %>% dplyr::filter(!is.na(id)) %>%               # Bind data together
+  plyr::rbind.fill(data) %>% dplyr::filter(!is.na(id)) %>%               # Bind data together
   rename(
     describeEA = Could.you..however.loosely..be.described.as..an.EA..,
     metaethics = What.moral.philosophy.do.you.subscribe.to..if.any.,
