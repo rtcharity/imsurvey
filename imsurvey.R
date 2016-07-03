@@ -7,7 +7,6 @@ if (!require(plyr)) install.packages('plyr'); library(plyr)
 if (!require(dplyr)) install.packages('dplyr'); library(dplyr)
 if (!require(devtools)) install.packages('devtools'); library(devtools)
 if (!require(surveytools2)) install_github('peterhurford/surveytools2'); library(surveytools2)
-if (!require(summarizeR)) install_github('peterhurford/summarizeR'); library(summarizeR)
 
 '~/dev/imsurvey' %>% setwd()           # Set wd to where CSVs are
 'transform_lookups.R' %>% source()     # Source lookup tables (we'll need them later)
